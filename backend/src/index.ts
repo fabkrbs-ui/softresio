@@ -8,24 +8,35 @@ const sql = postgres({
   password: process.env.DATABASE_PASSWORD,
 })
 
-const begin_with_timeout = (body) => {
+const begin_with_timeout = (
+  body: (sql: postgres.TransactionSql) => void | Promise<void>,
+) => {
   return sql.begin(async (sql) => {
-    await sql`set local transaction_timeout '1s';`
-    await body()
+    await sql`set local transaction_timeout = '1s';`
+    return await body(sql)
   })
 }
+
+sql.begin(async (sql) => {
+  await sql`select 1;`
+})
 
 await sql`
   create table if not exists "sheets" ( sheet jsonb );
 `
 await sql`
-  create index idxsheets ON sheets using gin ( sheet );
+  create index if not exists idxsheets ON sheets using gin ( sheet );
 `
 
 const app = new Hono()
 
-app.get("/", (c) => {
-  return c.text("Hello Hono!")
+app.get("/", async (c) => {
+  const res = await begin_with_timeout(async (sql: postgres.TransactionSql) => {
+    const res = await sql`select 4 as foo;`
+    return res.at(0)
+  })
+  console.log(res)
+  return c.text(res.foo)
 })
 
 export default app

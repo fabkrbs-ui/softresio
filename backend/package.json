@@ -1,11 +1,11 @@
 {
   "name": "myapp",
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot --watch src/index.ts"
   },
   "dependencies": {
     "hono": "^4.11.4",
-    "postgres": "npm:postgres"
+    "postgres": "npm:postgres@v3.4.7"
   },
   "devDependencies": {
     "@types/bun": "latest"

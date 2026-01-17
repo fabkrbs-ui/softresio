@@ -3,7 +3,7 @@ services:
     build: "backend"
     # command: ["deno", "run", "--allow-net", "--watch", "server.ts"]
     volumes:
-      - ./backend/src/:/app/src/:ro
+      - ./backend/src:/app/src:ro
     ports:
       - "127.0.0.1:3000:3000"
     environment:
