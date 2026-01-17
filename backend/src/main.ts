@@ -32,11 +32,11 @@ const app = new Hono()
 
 app.get("/", async (c) => {
   const res = await begin_with_timeout(async (sql: postgres.TransactionSql) => {
-    const res = await sql`select 4 as foo;`
+    const res = await sql`select 6 as foo;`
     return res.at(0)
   })
   console.log(res)
   return c.text(res.foo)
 })
 
-export default app
+Deno.serve(app.fetch)

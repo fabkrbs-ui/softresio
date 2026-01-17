@@ -1,12 +1,12 @@
-FROM oven/bun:latest
+FROM denoland/deno:latest
 
 WORKDIR /app
 
-COPY package.json ./
-COPY bun.lock ./
+# Install dependencies
+COPY deno.json deno.lock .
+RUN deno install
 
-RUN bun install
+# Copy app
+COPY src/ src/
 
-COPY src/ ./src/
-
-CMD ["bun", "run", "dev"]
+CMD ["deno", "task", "start"]
