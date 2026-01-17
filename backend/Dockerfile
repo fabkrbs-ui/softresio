@@ -1,7 +1,15 @@
-from node:24
+FROM denoland/deno:latest
 
-workdir /app
-copy ./package.json ./package-lock.json /app
-run npm install
-copy ./src/ /app/src/
-cmd node ./src/index.js
+# Create working directory
+WORKDIR /app
+
+# Copy source
+COPY ./deno.json deno.json
+
+# Install dependencies (use just `deno install` if deno.json has imports)
+RUN deno install
+
+copy ./src ./
+
+# Run the app
+CMD ["deno", "run", "--allow-net", "server.ts"]
