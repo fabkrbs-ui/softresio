@@ -4,7 +4,8 @@
     "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
-    "hono": "^4.11.4"
+    "hono": "^4.11.4",
+    "postgres": "npm:postgres"
   },
   "devDependencies": {
     "@types/bun": "latest"
