@@ -7,6 +7,7 @@ COPY deno.json deno.lock .
 RUN deno install
 
 # Copy app
-COPY src/ src/
+COPY backend/src/ src/
+COPY backend/types/ ./types/
 
 CMD ["deno", "task", "start"]
