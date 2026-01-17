@@ -1,0 +1,11 @@
+select sheet->'id' from sheets where sheet @> '{"id": "e48d272a-c5c1-40fb-b91d-33ada0dc9060"}';
+3340.394 ms without index
+15 ms with index
+// How to only index the ID field tho :(
+CREATE INDEX idxsheet ON sheets USING GIN (sheet);
+
+
+select sheet->'id' from sheets where sheet @> '{"attendees": [{"name": "ingrid fournier"}]}';
+
+
+~6 minutes to insert everything without index
