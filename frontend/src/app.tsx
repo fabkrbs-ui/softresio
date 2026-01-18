@@ -1,43 +1,74 @@
 import { useState } from 'preact/hooks'
-import preactLogo from './assets/preact.svg'
-import viteLogo from '/vite.svg'
+import { Grid, Paper, Title, Textarea, Select, useMantineTheme, Box, Button, Switch, PasswordInput } from '@mantine/core';
 import './app.css'
+import logo from '../public/logo-black.png';
+import { Menu } from './menu.tsx'
 
 export function App() {
   const [count, setCount] = useState(5)
+  const theme = useMantineTheme(); 
+
+  const [instance, setInstance] = useState("")
+  const [description, setDescription] = useState("")
+  const [adminPassword, setAdminPassword] = useState("")
+  const [useSRPlus, setUseSRPlus] = useState(false)
+
+  function createRaid() {
+    console.log(
+      {
+        instance,
+        description,
+        useSRPlus,
+        adminPassword
+      }
+    )
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} class="logo" alt="Vite logo" />
-        </a>
-        <a href="https://preactjs.com" target="_blank">
-          <img src={preactLogo} class="logo preact" alt="Preact logo" />
-        </a>
-      </div>
-      <h1>Vite + Preact</h1>
-      <div class="card">
-        <button type="button" onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/app.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p>
-        Check out{' '}
-        <a
-          href="https://preactjs.com/guide/v10/getting-started#create-a-vite-powered-preact-app"
-          target="_blank"
-        >
-          create-preact
-        </a>
-        , the official Preact + Vite starter
-      </p>
-      <p class="read-the-docs">
-        Click on the Vite and Preact logos to learn more
-      </p>
+      <Box style={{backgroundColor: theme.colors.dark[8], height: "100vh"}}>
+        <Menu/>
+        <Grid justify="center">
+          <Grid.Col span={{ base: 11, md:6 }}>
+            <Paper shadow="md" p="xl">
+              <Title pb={10} order={1}>Create a new raid</Title>
+              <Select
+                pb={20}
+                withAsterisk={instance == ""}
+                label="Instance"
+                placeholder="Select instance"
+                data={["The Blackwing Lair", "Naxxramas", "The Molten Core" ]}
+                value={instance}
+                onChange={setInstance}
+              />
+              <Textarea
+                pb={20}
+                label="Description"
+                value={description}
+                onChange={(event: any) => setDescription(event.currentTarget.value)}
+              />
+              <PasswordInput
+                pb={20}
+                withAsterisk
+                label="Admin password"
+                value={adminPassword}
+                withAsterisk={adminPassword == ""}
+                onChange={(event: any) => setAdminPassword(event.currentTarget.value)}
+                description="Anyone with the admin password can become admin of the raid"
+              />
+              <Switch
+                pb={40}
+                value={useSRPlus}
+                onChange={(event: any) => setUseSRPlus(event.currentTarget.value)}
+                label="Use SR+"
+              />
+              <Button onClick={createRaid} disabled={!instance || !adminPassword}>
+                Create Raid
+              </Button>
+            </Paper>
+          </Grid.Col>
+        </Grid>
+      </Box>
     </>
   )
 }
