@@ -1,16 +1,10 @@
 import {
-  Anchor,
   Box,
   Burger,
   Button,
-  Center,
-  Collapse,
-  Divider,
   Drawer,
   Group,
-  HoverCard,
   ScrollArea,
-  SimpleGrid,
   Text,
   UnstyledButton,
   useMantineTheme,
@@ -19,6 +13,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import logo from "../public/logo-orange.png";
 import classes from './menu.module.css';
+import { NavLink } from "react-router";
 
 const mockdata = [
   {
@@ -74,12 +69,16 @@ export function Menu() {
           <Group>
           <Image src={logo} h={50} w="auto" />
             <Group visibleFrom="sm">
-              <Button variant="default">
-                My Raids
-              </Button>
-              <Button>
-                Create Raid
-              </Button>
+              <NavLink to="/list">
+                <Button variant="default">
+                  My raids
+                </Button>
+              </NavLink>
+              <NavLink to="/new">
+                <Button>
+                  Create raid
+                </Button>
+              </NavLink>
             </Group>
           </Group>
 
