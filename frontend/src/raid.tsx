@@ -33,9 +33,9 @@ export function Raid() {
   if (sheet && instance) {
     return (
       <>
-        <Grid justify="center">
+        <Grid gutter={0} justify="center">
           <Grid.Col span={{ base: 11, md:8 }}>
-            <Paper shadow="md" p="xl">
+            <Paper shadow="sm" p="xl">
               <Title>{instance.name}</Title>
             </Paper>
           </Grid.Col>

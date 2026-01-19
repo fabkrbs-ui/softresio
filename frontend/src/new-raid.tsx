@@ -43,9 +43,9 @@ export function NewRaid() {
 
   return (
     <>
-      <Grid justify="center">
-        <Grid.Col span={{ base: 11, md:4 }}>
-          <Paper shadow="md" p="xl">
+      <Grid gutter={0} justify="center">
+        <Grid.Col span={{ base: 11, md:8, lg: 4 }}>
+          <Paper shadow="sm" p="xl">
             <Title pb={10} order={1}>Create a new raid</Title>
             <Select
               pb={20}
