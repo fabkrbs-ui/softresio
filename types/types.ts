@@ -59,3 +59,17 @@ export interface CreateRaidRequest {
   use_sr_plus: boolean,
   admin_password: string
 }
+
+export interface Item {
+  id: number
+  tooltip: string
+  name: string
+  quality: 1 | 2 | 3 | 4 | 5
+}
+
+export interface Instance {
+  id: number
+  name: string
+  shortname: string
+  items: Item[]
+}
