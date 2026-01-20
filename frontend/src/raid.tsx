@@ -63,16 +63,18 @@ export function Raid() {
   if (sheet && instance) {
     return (
       <>
-        <Grid gutter={0} justify="center" style={{flex: 1}}>
-          <Grid.Col span={{ base: 11, md: 4 }} style={{flex: 1}}>
-            {
-              /*
+        <Grid gutter={0} justify="center">
+          <Grid.Col span={{ base: 11, md: 4 }}>
             <Paper shadow="sm" p="xl">
               <Title>{instance.name}</Title>
             </Paper>
-             */
-            }
+            <br/>
             <ItemSelector items={instance.items} />
+            <br/>
+            <Paper shadow="sm" p="xl">
+              SR list coming soon! (tm)
+            </Paper>
+            <br/>
           </Grid.Col>
         </Grid>
       </>

@@ -7,6 +7,7 @@ import {
   IconSearch,
 } from "@tabler/icons-react";
 import {
+  Flex,
   ActionIcon,
   Box,
   Button,
@@ -23,100 +24,16 @@ import {
   TextInput,
   Title,
   Select,
-  ScrollArea
+  ScrollArea,
+  Modal
 } from "@mantine/core";
+import { classes, classIcons } from './classes.ts'
 import type { SelectProps } from "@mantine/core";
 import { useDebounce } from "use-debounce";
 import { Spotlight, spotlight } from "@mantine/spotlight";
 import type { SpotlightActionData } from "@mantine/spotlight";
 import "./tooltip.css";
 
-const classes = {
-  "Warrior": [
-    "Arms",
-    "Fury",
-    "Protection"
-  ],
-  "Priest": [
-    "Discipline",
-    "Holy",
-    "Shadow"
-  ],
-  "Mage": [
-    "Arcane",
-    "Fire",
-    "Frost"
-  ],
-  "Rogue": [
-    "Assassination",
-    "Combat",
-    "Subtlety"
-  ],
-  "Druid": [
-    "Balance",
-    "Feral Combat",
-    "Restoration"
-  ],
-  "Paladin": [
-    "Holy",
-    "Protection",
-    "Retribution"
-  ],
-  "Shaman": [
-    "Elemental",
-    "Enhancement",
-    "Restoration"
-  ],
-  "Warlock": [
-    "Affliction",
-    "Demonology",
-    "Destruction"
-  ],
-  "Hunter": [
-    "Beast Mastery",
-    "Marksmanship",
-    "Survival"
-  ]
-}
-
-const icons = {
-  "Warrior": "class_warrior.png",
-  "WarriorArms": "ability_rogue_eviscerate.png",
-  "WarriorFury": "ability_warrior_innerrage.png",
-  "WarriorProtection": "inv_shield_06.png",
-  "Paladin": "class_paladin.png",
-  "PaladinHoly": "spell_holy_holybolt.png",
-  "PaladinProtection": "spell_holy_devotionaura.png",
-  "PaladinRetribution": "spell_holy_auraoflight.png",
-  "Hunter": "class_hunter.png",
-  "HunterBeastMastery": "ability_hunter_beasttaming.png",
-  "HunterMarksmanship": "ability_marksmanship.png",
-  "HunterSurvival": "ability_hunter_swiftstrike.png",
-  "Rogue": "class_rogue.png",
-  "RogueAssassination": "ability_rogue_eviscerate.png",
-  "RogueCombat": "ability_backstab.png",
-  "RogueSubtlety": "ability_stealth.png",
-  "Priest": "class_priest.png",
-  "PriestDiscipline": "spell_holy_wordfortitude.png",
-  "PriestHoly": "spell_holy_holybolt.png",
-  "PriestShadow": "spell_shadow_shadowwordpain.png",
-  "Shaman": "class_shaman.png",
-  "ShamanElemental": "spell_nature_lightning.png",
-  "ShamanEnhancement": "spell_nature_lightningshield.png",
-  "ShamanRestoration": "spell_nature_magicimmunity.png",
-  "Mage": "class_mage.png",
-  "MageArcane": "spell_holy_magicalsentry.png",
-  "MageFire": "spell_fire_flamebolt.png",
-  "MageFrost": "spell_frost_frostbolt02.png",
-  "Warlock": "class_warlock.png",
-  "WarlockAffliction": "spell_shadow_deathcoil.png",
-  "WarlockDemonology": "spell_shadow_metamorphosis.png",
-  "WarlockDestruction": "spell_shadow_rainoffire.png",
-  "Druid": "class_druid.png",
-  "DruidBalance": "spell_nature_starfall.png",
-  "DruidFeralCombat": "ability_racial_bearform.png",
-  "DruidRestoration": "spell_nature_healingtouch.png"
-}
 
 const ClassIcon = ({iconId}: {iconId: string}) => {
   return (
@@ -124,13 +41,13 @@ const ClassIcon = ({iconId}: {iconId: string}) => {
       radius="sm"
       h={20}
       w="auto"
-      src={`https://talents.turtlecraft.gg/icons/${icons[iconId]}`}
+      src={`https://talents.turtlecraft.gg/icons/${classIcons[iconId]}`}
     />
   )
 }
 
 const renderSelectOption: SelectProps['renderOption'] = ({ option, checked }) => (
-  <Group flex="1" gap="xs">
+  <Group gap="xs">
     <ClassIcon iconId={option.value}/>
     {option.label}
   </Group>
@@ -138,6 +55,7 @@ const renderSelectOption: SelectProps['renderOption'] = ({ option, checked }) =>
 
 export function ItemSelector({ items }: { items: Item[] }) {
   const [unfolded, setUnfolded] = useState<number[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false)
   const [search, setSearch] = useState("");
   const [selectedClass, setSelectedClass] = useState<string | null>();
   const [selectedSpec, setSelectedSpec] = useState<string | null>();
@@ -145,12 +63,12 @@ export function ItemSelector({ items }: { items: Item[] }) {
   const [filteredItems, setFilteredItems] = useState(items);
 
   useEffect(() => {
-    setFilteredItems(items.filter((item) => item.name.includes(search)).slice(0,10));
+    setFilteredItems(items.filter((item) => item.name.includes(search)));
   }, [search]);
 
   return (
     <>
-      <Paper shadow="sm" p="md" style={{flex: 1}}>
+      <Paper shadow="sm" p="md">
         <Stack>
           <Title order={2}>Choose your SR</Title>
           <TextInput
@@ -182,7 +100,13 @@ export function ItemSelector({ items }: { items: Item[] }) {
               label="Specialization"
             />
           </Group>
-          <Divider />
+          <Button mt="md" onClick={() => setSearchOpen(true)}>
+            Select item(s)
+          </Button>
+        </Stack>
+      </Paper>
+      <Modal opened={searchOpen} onClose={() => setSearchOpen(false)} title="Items" size="auto" mah="100vh">
+        <Stack>
           <Group grow>
             <Select
               placeholder="Slot"
@@ -204,18 +128,16 @@ export function ItemSelector({ items }: { items: Item[] }) {
             placeholder="Search.."
           >
           </Input>
+          <ItemList items={filteredItems} />
         </Stack>
-        <br />
-        <Divider mb={8} />
-        <ItemList items={filteredItems} />
-      </Paper>
+      </Modal>
     </>
   );
 }
 
 const ItemList = memo(({ items }: { items: Item[] }) => {
   return (
-    <ScrollArea flex={1} style={{overflow: "scroll"}}>
+    <ScrollArea>
       {items.map((item) => (
         <Box pb={10} key={item.id}>
           <Stack>
