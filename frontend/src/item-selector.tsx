@@ -25,6 +25,7 @@ import {
   Title,
   Select,
   ScrollArea,
+  CloseButton,
   Modal
 } from "@mantine/core";
 import { classes, classIcons } from './classes.ts'
@@ -108,13 +109,23 @@ export function ItemSelector({ items }: { items: Item[] }) {
       <Modal
         opened={searchOpen}
         onClose={() => setSearchOpen(false)}
-        title="Items"
         size="auto"
+        withCloseButton={false}
         styles={{
-          body: { height: "80vh", display: "flex", flexDirection: "column" },
+          body: { height: "90dvh", display: "flex", flexDirection: "column" },
         }}
       >
         <Stack h="100%" gap="md">
+          <Group justify="space-between" wrap="nowrap">
+            <Input
+              w="100%"
+              value={search}
+              onChange={(event: any) => setSearch(event.currentTarget.value)}
+              leftSection={<IconSearch size={16} />}
+              placeholder="Search.."
+            />
+            <CloseButton onClick={() => setSearchOpen(false)}/>
+          </Group>
           <Group grow>
             <Select
               placeholder="Slot"
@@ -129,13 +140,6 @@ export function ItemSelector({ items }: { items: Item[] }) {
               data={["Plate", "Cloth", "Mail"]}
             />
           </Group>
-          <Input
-            value={search}
-            onChange={(event: any) => setSearch(event.currentTarget.value)}
-            leftSection={<IconSearch size={16} />}
-            placeholder="Search.."
-          >
-          </Input>
           <ItemList items={filteredItems} />
         </Stack>
       </Modal>
@@ -147,7 +151,7 @@ const ItemList = memo(({ items }: { items: Item[] }) => {
   return (
     <ScrollArea>
       {items.map((item) => (
-        <Box pb={10} key={item.id}>
+        <Box pb={10} key={item.id} mr={15}>
           <Stack>
             <Group justify="space-between" wrap="nowrap">
               <HoverCard>
