@@ -151,7 +151,7 @@ const ItemList = memo(({ items }: { items: Item[] }) => {
   return (
     <ScrollArea>
       {items.map((item) => (
-        <Box className="item-list-element" p={8} key={item.id}>
+        <Box className="item-list-element" p={8} key={item.id} mr={10}>
           <Stack>
             <Group justify="space-between" wrap="nowrap">
               <HoverCard>
