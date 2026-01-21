@@ -58,7 +58,7 @@ export function CreateRaid() {
       time: time.toISOString(),
       sr_count: srCount,
     };
-    fetch("/api/create", { method: "POST", body: JSON.stringify(request) })
+    fetch("/api/raid/create", { method: "POST", body: JSON.stringify(request) })
       .then((r) => r.json())
       .then((j: GenericResponse<CreateRaidResponse>) => {
         if (j.error) {

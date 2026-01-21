@@ -1,8 +1,7 @@
 export type SrCount = 1 | 2 | 3 | 4;
 export interface Character {
   name: string;
-  class: string;
-  spec:
+  class:
     | "Warrior"
     | "Mage"
     | "Paladin"
@@ -11,6 +10,7 @@ export interface Character {
     | "Warlock"
     | "Rogue"
     | "Shaman";
+  spec: string;
 }
 
 export interface User {
@@ -80,6 +80,12 @@ export interface CreateRaidRequest {
 
 export interface CreateRaidResponse {
   raid_id: string;
+}
+
+export interface CreateSrRequest {
+  raid_id: string;
+  character: Character;
+  selected_item_ids: number[];
 }
 
 export interface Item {

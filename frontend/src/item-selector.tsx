@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { memo } from "preact/compat";
-import type { Item, Sheet } from "../types/types.ts";
+import type {
+  Character,
+  CreateSrRequest,
+  GenericResponse,
+  Item,
+  Sheet,
+} from "../types/types.ts";
 import {
   IconChevronDown,
   IconChevronUp,
@@ -80,12 +86,14 @@ function ItemComponent({
   items: Item[];
   showTooltipItemId: number | undefined;
   itemId?: number;
-  deleteMode: boolean
+  deleteMode: boolean;
 }>) {
   const { hovered, ref } = useHover();
   const handlers = useLongPress(() => onItemLongClick(item.id));
 
-  const item = itemId ? items.filter((item: Item) => item.id == itemId)[0] : items[index];
+  const item = itemId
+    ? items.filter((item: Item) => item.id == itemId)[0]
+    : items[index];
 
   return (
     <Tooltip
@@ -105,7 +113,9 @@ function ItemComponent({
         style={style}
         justify="space-between"
         wrap="nowrap"
-        className={deleteMode ? "item-list-element-delete" : "item-list-element"}
+        className={deleteMode
+          ? "item-list-element-delete"
+          : "item-list-element"}
         onClick={() => onItemClick(item.id)}
         p={8}
         key={item.id}
@@ -131,7 +141,9 @@ function ItemComponent({
             {item.name}
           </Title>
         </Group>
-        {deleteMode ? <CloseButton /> : <Checkbox checked={selectedItems.includes(item.id)} size="md" />}
+        {deleteMode
+          ? <CloseButton />
+          : <Checkbox checked={selectedItems.includes(item.id)} size="md" />}
       </Group>
     </Tooltip>
   );
@@ -151,6 +163,26 @@ export function ItemSelector(
   const [showTooltipItemId, setShowTooltipItemId] = useState<number | null>();
 
   const onItemLongClick = (item_id: number) => setShowTooltipItemId(item_id);
+
+  const submitSr = () => {
+    const character: Character = {
+      name: characterName,
+      class: selectedClass,
+      spec: selectedSpec,
+    };
+    const request: CreateSrRequest = {
+      raid_id: sheet.id,
+      character,
+      selected_item_ids: selectedItems,
+    };
+    fetch("/api/sr/create", { method: "POST", body: JSON.stringify(request) })
+      .then((r) => r.json())
+      .then((j: GenericResponse<null>) => {
+        if (j.error) {
+          alert(j.error);
+        }
+      });
+  };
 
   const onItemClick = (item_id: number) => {
     if (!showTooltipItemId || showTooltipItemId == item_id) {
@@ -219,7 +251,11 @@ export function ItemSelector(
               label="Specialization"
             />
           </Group>
-          <Paper shadow="sm" p="md" style={{ backgroundColor: "var(--mantine-color-dark-8" }}>
+          <Paper
+            shadow="sm"
+            p="md"
+            style={{ backgroundColor: "var(--mantine-color-dark-8" }}
+          >
             <Button
               w="100%"
               onClick={() => setSearchOpen(true)}
@@ -240,14 +276,13 @@ export function ItemSelector(
                   showTooltipItemId={showTooltipItemId}
                   onItemLongClick={onItemLongClick}
                 />
-
               ))}
             </Stack>
           </Paper>
           <Button
             disabled={!selectedClass || !selectedSpec || !characterName ||
               selectedItems.length != sheet.sr_count}
-            onClick={() => console.log("hej")}
+            onClick={submitSr}
           >
             Submit
           </Button>

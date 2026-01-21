@@ -1,12 +1,15 @@
 import postgres, { Row, RowList, TransactionSql } from "postgres"
 import process from "node:process"
 import type {
+  Attendee,
   CreateRaidRequest,
   CreateRaidResponse,
+  CreateSrRequest,
   GenericResponse,
   Instance,
   Raid,
   Sheet,
+  SoftReserve,
 } from "../types/types.ts"
 import { Hono } from "hono"
 import { getCookie, setCookie } from "hono/cookie"
@@ -103,7 +106,41 @@ app.get("/api/instances", async (c) => {
   return c.json(response)
 })
 
-app.post("/api/create", async (c) => {
+app.post("/api/sr/create", async (c) => {
+  const user = await get_or_create_user(c)
+  const body = await c.req.json() as CreateSrRequest
+  const character = body.character
+  const soft_reserves: SoftReserve[] = body.selected_item_ids.map((
+    item_id,
+  ) => ({
+    item_id: item_id,
+    sr_plus: null,
+    comment: null,
+  }))
+  const attendee: Attendee = {
+    character,
+    soft_reserves,
+    user,
+  }
+  begin_with_timeout(async (tx) => {
+    let [raid] = await tx<
+      Raid[]
+    >`select raid -> 'sheet' as sheet from raids where raid @> ${{
+      sheet: { id: body.raid_id },
+    }} for update;`
+    if (!raid) {
+      return c.json({ error: "Raid not found" }, 400)
+    }
+    raid.sheet.attendees = [...raid.sheet.attendees, attendee]
+    await tx`update raids set ${sql({ raid: raid })} where raid @> ${{
+      sheet: { id: body.raid_id },
+    }}`
+  })
+  const response: GenericResponse<null> = { user, data: null }
+  return c.json(response)
+})
+
+app.post("/api/raid/create", async (c) => {
   const user = await get_or_create_user(c)
   const body = await c.req.json() as CreateRaidRequest
   const raid_id = generate_raid_id()
