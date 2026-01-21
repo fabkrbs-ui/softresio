@@ -21,6 +21,7 @@ import {
   Input,
   Modal,
   MultiSelect,
+  NavLink,
   Paper,
   ScrollArea,
   Select,
@@ -28,7 +29,6 @@ import {
   TextInput,
   Title,
   Tooltip,
-  NavLink
 } from "@mantine/core";
 import { useClickOutside, useHover, useToggle } from "@mantine/hooks";
 import { useLongPress } from "use-long-press";
@@ -109,7 +109,10 @@ function ItemComponent({
       >
         <Group wrap="nowrap">
           <Image
-            onClick={(e) => { e.stopPropagation(); window.open(`https://database.turtlecraft.gg/?item=${item.id}`) }}
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(`https://database.turtlecraft.gg/?item=${item.id}`);
+            }}
             style={{
               filter: "drop-shadow(0px 0px 2px)",
               border: "1px solid rgba(255,255,255,0.3)",
@@ -134,7 +137,7 @@ export function ItemSelector({ items }: { items: Item[] }) {
   const [unfolded, setUnfolded] = useState<number[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [debouncedSearch] = useDebounce(search, 500);
+  const [debouncedSearch] = useDebounce(search, 100);
   const [selectedClass, setSelectedClass] = useState<string | null>();
   const [selectedSpec, setSelectedSpec] = useState<string | null>();
   const [characterName, setCharacterName] = useState("");
