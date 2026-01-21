@@ -27,7 +27,13 @@ services:
         condition: "service_healthy"
   database:
     image: "postgres:18"
-    command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
+    command: [
+      "postgres",
+      "-c",
+      "log_statement=all",
+      "-c",
+      "log_destination=stderr",
+    ]
     environment:
       POSTGRES_PASSWORD: "softres"
       POSTGRES_USER: "softres"

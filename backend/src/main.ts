@@ -1,4 +1,4 @@
-import postgres, { RowList, Row, TransactionSql } from "postgres"
+import postgres, { Row, RowList, TransactionSql } from "postgres"
 import process from "node:process"
 import type {
   CreateRaidRequest,
@@ -9,16 +9,15 @@ import type {
   Sheet,
 } from "../types/types.ts"
 import { Hono } from "hono"
-import { getCookie, setCookie, } from 'hono/cookie'
-import * as fs from 'node:fs';
-import * as jwt from 'hono/jwt'
-import { randomUUID } from 'node:crypto'
-
+import { getCookie, setCookie } from "hono/cookie"
+import * as fs from "node:fs"
+import * as jwt from "hono/jwt"
+import { randomUUID } from "node:crypto"
 
 var instances: Instance[] = []
 
 const getenv = (name: string): string => {
-  const value = process.env[name] 
+  const value = process.env[name]
   if (!value) {
     throw new Error(`Missing environment variable ${name}`)
   }
@@ -32,7 +31,7 @@ const JWT_SECRET = getenv("JWT_SECRET")
 
 fs.glob("./instances/*.json", async (err, matches) => {
   if (err) {
-      throw err
+    throw err
   }
   for (const file of matches) {
     const instance: Instance = JSON.parse(await Deno.readTextFile(file))
@@ -66,17 +65,18 @@ await sql`
 const app = new Hono()
 
 const generate_raid_id = (): string => {
-  const character_set = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  const character_set =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
   let raid_id = ""
   for (let i = 0; i < 5; i++) {
-    raid_id += character_set[Math.floor(Math.random()*character_set.length)]
+    raid_id += character_set[Math.floor(Math.random() * character_set.length)]
   }
   return raid_id
 }
 
 const get_or_create_user = async (c): User => {
   // Try to get user from cookie
-  const token = getCookie(c, 'auth')
+  const token = getCookie(c, "auth")
   if (token) {
     const decoded = await jwt.verify(token, JWT_SECRET, "HS256")
     if (decoded && decoded.user_id) {
@@ -88,11 +88,11 @@ const get_or_create_user = async (c): User => {
   const user_id = randomUUID()
   const user = { user_id, issuer: DOMAIN }
   const new_token = await jwt.sign(user, JWT_SECRET, "HS256")
-  setCookie(c, 'auth', new_token, {
+  setCookie(c, "auth", new_token, {
     secure: true,
     domain: DOMAIN,
     httpOnly: true,
-    sameSite: 'Strict'
+    sameSite: "Strict",
   })
   return user
 }
@@ -107,7 +107,7 @@ app.post("/api/create", async (c) => {
   const user = await get_or_create_user(c)
   const body = await c.req.json() as CreateRaidRequest
   const raid_id = generate_raid_id()
-  const raid: Raid  = {
+  const raid: Raid = {
     sheet: {
       id: raid_id,
       instance_id: body.instance_id,
@@ -116,17 +116,20 @@ app.post("/api/create", async (c) => {
       sr_count: body.sr_count,
       activity_log: [],
       attendees: [],
-      admins: [ 
-        user
+      admins: [
+        user,
       ],
       password: {
         hash: "yes" + body.admin_password,
-        salt: "yes"
-      }
-    }
+        salt: "yes",
+      },
+    },
   }
   await sql`insert into raids ${sql({ raid: raid })};`
-  const response: GenericResponse<CreateRaidResponse> = { data: { raid_id }, user }
+  const response: GenericResponse<CreateRaidResponse> = {
+    data: { raid_id },
+    user,
+  }
 
   return c.json(response)
 })
@@ -140,7 +143,7 @@ app.get("/api/:sheet_id", async (c) => {
     sheet: { id: sheet_id },
   }};`
   if (!raid) {
-   return c.json({ error: 'Raid not found' }, 404)
+    return c.json({ error: "Raid not found" }, 404)
   }
   const response: GenericResponse<Sheet> = { data: raid.sheet, user }
   return c.json(response)
