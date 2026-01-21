@@ -151,7 +151,7 @@ const ItemList = memo(({ items }: { items: Item[] }) => {
   return (
     <ScrollArea>
       {items.map((item) => (
-        <Box pb={10} key={item.id} mr={15}>
+        <Box className="item-list-element" p={8} key={item.id}>
           <Stack>
             <Group justify="space-between" wrap="nowrap">
               <HoverCard>
@@ -159,7 +159,6 @@ const ItemList = memo(({ items }: { items: Item[] }) => {
                   <Group wrap="nowrap">
                     <Image
                       style={{ filter: "drop-shadow(0px 0px 2px)" }}
-                      ml="sm"
                       className={`q${item.quality}`}
                       radius="sm"
                       h={20}
@@ -183,7 +182,6 @@ const ItemList = memo(({ items }: { items: Item[] }) => {
               </Group>
             </Group>
           </Stack>
-          <Divider mt={8} />
         </Box>
       ))}
     </ScrollArea>
