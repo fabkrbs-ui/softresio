@@ -43,7 +43,10 @@ export function CreateRaid() {
   );
 
   function createRaid() {
-    if (instanceId == undefined || adminPassword == undefined) {
+    if (
+      instanceId == undefined || adminPassword == undefined ||
+      srCount == undefined
+    ) {
       alert("Missing information");
       return;
     }
@@ -55,7 +58,7 @@ export function CreateRaid() {
       time: time.toISOString(),
       sr_count: srCount,
     };
-    fetch("/api/new", { method: "POST", body: JSON.stringify(request) })
+    fetch("/api/create", { method: "POST", body: JSON.stringify(request) })
       .then((r) => r.json())
       .then((j: GenericResponse<CreateRaidResponse>) => {
         if (j.error) {

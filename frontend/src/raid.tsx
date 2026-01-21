@@ -69,7 +69,7 @@ export function Raid() {
               <Title>{instance.name}</Title>
             </Paper>
             <br />
-            <ItemSelector items={instance.items} />
+            <ItemSelector items={instance.items} sheet={sheet} />
             <br />
             <Paper shadow="sm" p="xl">
               SR list coming soon! (tm)

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { memo } from "preact/compat";
-import type { Item } from "../types/types.ts";
+import type { Item, Sheet } from "../types/types.ts";
 import {
   IconChevronDown,
   IconChevronUp,
@@ -71,17 +71,21 @@ function ItemComponent({
   onItemLongClick,
   showTooltipItemId,
   style,
+  itemId,
+  deleteMode = false,
 }: RowComponentProps<{
   onItemClick: (item_id: number) => void;
   onItemLongClick: (item_id: number) => void;
   selectedItems: number[];
   items: Item[];
   showTooltipItemId: number | undefined;
+  itemId?: number;
+  deleteMode: boolean
 }>) {
   const { hovered, ref } = useHover();
   const handlers = useLongPress(() => onItemLongClick(item.id));
 
-  const item = items[index];
+  const item = itemId ? items.filter((item: Item) => item.id == itemId)[0] : items[index];
 
   return (
     <Tooltip
@@ -101,11 +105,11 @@ function ItemComponent({
         style={style}
         justify="space-between"
         wrap="nowrap"
-        className="item-list-element"
+        className={deleteMode ? "item-list-element-delete" : "item-list-element"}
         onClick={() => onItemClick(item.id)}
         p={8}
         key={item.id}
-        mr={10}
+        mr={deleteMode ? 0 : 10}
       >
         <Group wrap="nowrap">
           <Image
@@ -127,14 +131,15 @@ function ItemComponent({
             {item.name}
           </Title>
         </Group>
-        <Checkbox checked={selectedItems.includes(item.id)} size="md" />
+        {deleteMode ? <CloseButton /> : <Checkbox checked={selectedItems.includes(item.id)} size="md" />}
       </Group>
     </Tooltip>
   );
 }
 
-export function ItemSelector({ items }: { items: Item[] }) {
-  const [unfolded, setUnfolded] = useState<number[]>([]);
+export function ItemSelector(
+  { items, sheet }: { items: Item[]; sheet: Sheet },
+) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 100);
@@ -214,8 +219,37 @@ export function ItemSelector({ items }: { items: Item[] }) {
               label="Specialization"
             />
           </Group>
-          <Button mt="md" onClick={() => setSearchOpen(true)}>
-            Select item(s)
+          <Paper shadow="sm" p="md" style={{ backgroundColor: "var(--mantine-color-dark-8" }}>
+            <Button
+              w="100%"
+              onClick={() => setSearchOpen(true)}
+              variant={selectedItems.length < sheet.sr_count ? "" : "default"}
+              mb={10}
+            >
+              Select item(s)
+            </Button>
+            <Stack gap={0}>
+              {selectedItems.map((itemId) => (
+                <ItemComponent
+                  items={items}
+                  index={0}
+                  itemId={itemId}
+                  onItemClick={onItemClick}
+                  deleteMode
+                  selectedItems={selectedItems}
+                  showTooltipItemId={showTooltipItemId}
+                  onItemLongClick={onItemLongClick}
+                />
+
+              ))}
+            </Stack>
+          </Paper>
+          <Button
+            disabled={!selectedClass || !selectedSpec || !characterName ||
+              selectedItems.length != sheet.sr_count}
+            onClick={() => console.log("hej")}
+          >
+            Submit
           </Button>
         </Stack>
       </Paper>

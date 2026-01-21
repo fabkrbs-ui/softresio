@@ -78,6 +78,10 @@ export interface CreateRaidRequest {
   sr_count: SrCount;
 }
 
+export interface CreateRaidResponse {
+  raid_id: string;
+}
+
 export interface Item {
   id: number;
   tooltip: string;

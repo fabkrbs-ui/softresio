@@ -1,6 +1,13 @@
 import postgres, { RowList, Row, TransactionSql } from "postgres"
 import process from "node:process"
-import type { Sheet, Raid, CreateRaidRequest, GenericResponse, Instance } from "../types/types.ts"
+import type {
+  CreateRaidRequest,
+  CreateRaidResponse,
+  GenericResponse,
+  Instance,
+  Raid,
+  Sheet,
+} from "../types/types.ts"
 import { Hono } from "hono"
 import { getCookie, setCookie, } from 'hono/cookie'
 import * as fs from 'node:fs';
@@ -96,7 +103,7 @@ app.get("/api/instances", async (c) => {
   return c.json(response)
 })
 
-app.post("/api/new", async (c) => {
+app.post("/api/create", async (c) => {
   const user = await get_or_create_user(c)
   const body = await c.req.json() as CreateRaidRequest
   const raid_id = generate_raid_id()
@@ -126,8 +133,12 @@ app.post("/api/new", async (c) => {
 
 app.get("/api/:sheet_id", async (c) => {
   const user = await get_or_create_user(c)
-  const sheet_id = c.req.param('sheet_id')
-  const [raid] = await sql<Raid[]>`select raid->'sheet' as sheet from raids where raid @> ${ { sheet: { id: sheet_id } } };`
+  const sheet_id = c.req.param("sheet_id")
+  const [raid] = await sql<
+    Raid[]
+  >`select raid #- '{sheet,password}' -> 'sheet' as sheet from raids where raid @> ${{
+    sheet: { id: sheet_id },
+  }};`
   if (!raid) {
    return c.json({ error: 'Raid not found' }, 404)
   }
