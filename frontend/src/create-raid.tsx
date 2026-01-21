@@ -52,6 +52,8 @@ export function CreateRaid() {
       admin_password: adminPassword,
       use_sr_plus: useSRPlus,
       description: description,
+      time: time.toISOString(),
+      sr_count: srCount,
     };
     fetch("/api/new", { method: "POST", body: JSON.stringify(request) })
       .then((r) => r.json())

@@ -104,8 +104,9 @@ app.post("/api/new", async (c) => {
     sheet: {
       id: raid_id,
       instance_id: body.instance_id,
-      time: (new Date()).toISOString(),
+      time: body.time,
       sr_plus_enabled: body.use_sr_plus,
+      sr_count: body.sr_count,
       activity_log: [],
       attendees: [],
       admins: [ 
