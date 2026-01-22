@@ -3,7 +3,8 @@
   "specifiers": {
     "jsr:@hono/hono@^4.11.4": "4.11.4",
     "npm:@types/node@*": "24.2.0",
-    "npm:postgres@3.4.7": "3.4.7"
+    "npm:postgres@3.4.7": "3.4.7",
+    "npm:tsc@*": "2.0.4"
   },
   "jsr": {
     "@hono/hono@4.11.4": {
@@ -19,6 +20,10 @@
     },
     "postgres@3.4.7": {
       "integrity": "sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw=="
+    },
+    "tsc@2.0.4": {
+      "integrity": "sha512-fzoSieZI5KKJVBYGvwbVZs/J5za84f2lSTLPYf6AGiIf43tZ3GNrI1QzTLcjtyDDP4aLxd46RTZq1nQxe7+k5Q==",
+      "bin": true
     },
     "undici-types@7.10.0": {
       "integrity": "sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag=="

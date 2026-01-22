@@ -10,16 +10,18 @@ import type {
   Raid,
   Sheet,
   SoftReserve,
+  User,
 } from "../types/types.ts"
 import { Hono } from "hono"
+import type { Context } from "hono"
 import { getCookie, setCookie } from "hono/cookie"
 import * as fs from "node:fs"
 import * as jwt from "hono/jwt"
 import { randomUUID } from "node:crypto"
 
-var instances: Instance[] = []
+const instances: Instance[] = []
 
-const getenv = (name: string): string => {
+const getEnv = (name: string): string => {
   const value = process.env[name]
   if (!value) {
     throw new Error(`Missing environment variable ${name}`)
@@ -27,10 +29,10 @@ const getenv = (name: string): string => {
   return value
 }
 
-const DATABASE_USER = getenv("DATABASE_USER")
-const DATABASE_PASSWORD = getenv("DATABASE_PASSWORD")
-const DOMAIN = getenv("DOMAIN")
-const JWT_SECRET = getenv("JWT_SECRET")
+const DATABASE_USER = getEnv("DATABASE_USER")
+const DATABASE_PASSWORD = getEnv("DATABASE_PASSWORD")
+const DOMAIN = getEnv("DOMAIN")
+const JWT_SECRET = getEnv("JWT_SECRET")
 
 fs.glob("./instances/*.json", async (err, matches) => {
   if (err) {
@@ -48,8 +50,8 @@ const sql = postgres({
   password: DATABASE_PASSWORD,
 })
 
-const begin_with_timeout = (
-  body: (tx: TransactionSql<{}>) => Promise<RowList<Row[]>>,
+const beginWithTimeout = (
+  body: (tx: TransactionSql<{}>) => Promise<RowList<Row[]> | void>,
 ) => {
   return sql.begin(async (tx) => {
     await tx`set local transaction_timeout = '1s';`
@@ -67,29 +69,31 @@ await sql`
 
 const app = new Hono()
 
-const generate_raid_id = (): string => {
-  const character_set =
+const generateRaidId = (): string => {
+  const characterSet =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-  let raid_id = ""
+  let raidId = ""
   for (let i = 0; i < 5; i++) {
-    raid_id += character_set[Math.floor(Math.random() * character_set.length)]
+    raidId += characterSet[Math.floor(Math.random() * characterSet.length)]
   }
-  return raid_id
+  return raidId
 }
 
-const get_or_create_user = async (c): User => {
+const getOrCreateUser = async (c: Context): Promise<User> => {
   // Try to get user from cookie
   const token = getCookie(c, "auth")
   if (token) {
-    const decoded = await jwt.verify(token, JWT_SECRET, "HS256")
-    if (decoded && decoded.user_id) {
+    const decoded = await jwt.verify(
+      token,
+      JWT_SECRET,
+      "HS256",
+    ) as unknown as User
+    if (decoded && decoded.userId) {
       return decoded
     }
   }
-
   // Create new user
-  const user_id = randomUUID()
-  const user = { user_id, issuer: DOMAIN }
+  const user = { userId: randomUUID(), issuer: DOMAIN }
   const new_token = await jwt.sign(user, JWT_SECRET, "HS256")
   setCookie(c, "auth", new_token, {
     secure: true,
@@ -101,84 +105,83 @@ const get_or_create_user = async (c): User => {
 }
 
 app.get("/api/instances", async (c) => {
-  const user = await get_or_create_user(c)
+  const user = await getOrCreateUser(c)
   const response: GenericResponse<Instance[]> = { data: instances, user }
   return c.json(response)
 })
 
 app.post("/api/sr/create", async (c) => {
-  const user = await get_or_create_user(c)
-  const body = await c.req.json() as CreateSrRequest
-  const character = body.character
-  const soft_reserves: SoftReserve[] = body.selected_item_ids.map((
-    item_id,
-  ) => ({
-    item_id: item_id,
-    sr_plus: null,
-    comment: null,
-  }))
+  const user = await getOrCreateUser(c)
+  const { raidId, character, selectedItemIds } = await c.req
+    .json() as CreateSrRequest
+  const softReserves: SoftReserve[] = selectedItemIds.map((
+    itemId,
+  ) => ({ itemId, srPlus: null, comment: null }))
   const attendee: Attendee = {
     character,
-    soft_reserves,
+    softReserves,
     user,
   }
-  begin_with_timeout(async (tx) => {
-    let [raid] = await tx<
+  beginWithTimeout(async (tx) => {
+    const [raid] = await tx<
       Raid[]
     >`select raid -> 'sheet' as sheet from raids where raid @> ${{
-      sheet: { id: body.raid_id },
-    }} for update;`
-    if (!raid) {
-      return c.json({ error: "Raid not found" }, 400)
-    }
+      sheet: { id: raidId },
+    } as never} for update;`
+    if (!raid) return
+    raid.sheet.attendees = raid.sheet.attendees.filter((attendee) =>
+      attendee.character.name !== character.name &&
+      attendee.user.userId !== user.userId
+    )
     raid.sheet.attendees = [...raid.sheet.attendees, attendee]
-    await tx`update raids set ${sql({ raid: raid })} where raid @> ${{
-      sheet: { id: body.raid_id },
-    }}`
+    await tx`update raids set ${sql({ raid: raid } as never)} where raid @> ${{
+      sheet: { raidId },
+    } as never}`
   })
   const response: GenericResponse<null> = { user, data: null }
   return c.json(response)
 })
 
 app.post("/api/raid/create", async (c) => {
-  const user = await get_or_create_user(c)
-  const body = await c.req.json() as CreateRaidRequest
-  const raid_id = generate_raid_id()
+  const user = await getOrCreateUser(c)
+  const { instanceId, srCount, useSrPlus, time, adminPassword } = await c.req
+    .json() as CreateRaidRequest
+  const raidId = generateRaidId()
   const raid: Raid = {
     sheet: {
-      id: raid_id,
-      instance_id: body.instance_id,
-      time: body.time,
-      sr_plus_enabled: body.use_sr_plus,
-      sr_count: body.sr_count,
-      activity_log: [],
+      raidId,
+      instanceId,
+      time,
+      useSrPlus,
+      srCount,
+      activityLog: [],
       attendees: [],
       admins: [
         user,
       ],
       password: {
-        hash: "yes" + body.admin_password,
+        hash: "yes" + adminPassword,
         salt: "yes",
       },
     },
   }
-  await sql`insert into raids ${sql({ raid: raid })};`
+  await sql`insert into raids ${sql({ raid: raid } as never)};`
   const response: GenericResponse<CreateRaidResponse> = {
-    data: { raid_id },
+    data: { raidId },
     user,
   }
 
   return c.json(response)
 })
 
-app.get("/api/:sheet_id", async (c) => {
-  const user = await get_or_create_user(c)
-  const sheet_id = c.req.param("sheet_id")
+app.get("/api/raid/:raidId", async (c) => {
+  const user = await getOrCreateUser(c)
+  const raidId = c.req.param("raidId")
   const [raid] = await sql<
     Raid[]
   >`select raid #- '{sheet,password}' -> 'sheet' as sheet from raids where raid @> ${{
-    sheet: { id: sheet_id },
-  }};`
+    sheet: { raidId },
+  } as never};`
   if (!raid) {
     return c.json({ error: "Raid not found" }, 404)
   }
