@@ -3,7 +3,7 @@ FROM denoland/deno:latest
 WORKDIR /app
 
 # Install dependencies
-COPY frontend/package.json frontend/deno.lock frontend/vite.config.ts frontend/index.html frontend/preact.config.js .
+COPY frontend/package.json frontend/deno.lock frontend/vite.config.ts frontend/index.html .
 RUN deno install
 
 # Copy app
