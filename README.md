@@ -39,3 +39,31 @@ Automated, just do this
 ```sh
     git push origin main
 ```
+
+### Example deployment compose
+> Make sure to fill out the `<SECRET>` stuff with actual secrets
+```yaml
+services:
+  softresio:
+    image: "ghcr.io/kofoednielsen/softresio:latest"
+    ports:
+      - "0.0.0.0:80:8000"
+    environment:
+      DATABASE_PASSWORD: "<SECRET_DATABASE_PASSWORD>"
+      DATABASE_USER: "softres"
+      DOMAIN: "<YOUR_DOMAIN_NAME>"
+      JWT_SECRET: "<SECRET_JWT_TOKEN>"
+    depends_on:
+      database:
+        condition: "service_healthy"
+  database:
+    image: "postgres:18"
+    environment:
+      POSTGRES_PASSWORD: "<SECRET_DATABASE_PASSWORD>"
+      POSTGRES_USER: "softres"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username softres"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+```
