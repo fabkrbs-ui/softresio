@@ -1,8 +1,8 @@
 services:
   frontend:
+    command: ["deno", "run", "dev", "--host", "0.0.0.0"]
     build:
-      context: "."
-      dockerfile: "frontend/Dockerfile"
+      target: "frontend"
     ports:
       - "127.0.0.1:8000:5173"
     volumes:
@@ -12,12 +12,13 @@ services:
       - "./types:/app/types:ro"
   backend:
     build:
-      context: "."
-      dockerfile: "backend/Dockerfile"
+      target: "backend"
     command: ["deno", "task", "start-dev"]
     volumes:
       - "./backend/src:/app/src:ro"
       - "./types:/app/types:ro"
+    ports:
+      - "127.0.0.1:9000:8000"
     environment:
       DATABASE_PASSWORD: "softres"
       DATABASE_USER: "softres"
