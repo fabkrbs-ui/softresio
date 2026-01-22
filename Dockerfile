@@ -1,0 +1,31 @@
+FROM denoland/deno:latest as frontend
+
+WORKDIR /app
+
+# Install dependencies
+COPY frontend/tsconfig.app.json frontend/tsconfig.node.json frontend/tsconfig.json frontend/package.json frontend/deno.lock frontend/vite.config.ts frontend/index.html .
+RUN deno install
+
+# Copy app
+COPY frontend/src/ ./src/
+COPY frontend/types/ ./types/
+COPY frontend/public/ ./public/
+COPY frontend/css/ ./css/
+
+RUN deno run build
+
+FROM denoland/deno:latest as backend
+
+WORKDIR /app
+
+# Install dependencies
+COPY backend/deno.json backend/deno.lock .
+RUN deno install
+
+# Copy app
+COPY backend/src/ ./src/
+COPY backend/types/ ./types/
+COPY backend/instances/ ./instances/
+COPY --from=frontend /app/dist ./static/
+
+CMD ["deno", "task", "start"]
