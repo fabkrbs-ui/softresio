@@ -1,4 +1,4 @@
-export const classes = {
+export const classes: {[className: string]: string[]} = {
   "Warrior": [
     "Arms",
     "Fury",
@@ -46,7 +46,7 @@ export const classes = {
   ],
 };
 
-export const classIcons = {
+export const classIcons: {[classSpec: string]: string} = {
   "Warrior": "class_warrior.png",
   "WarriorArms": "ability_rogue_eviscerate.png",
   "WarriorFury": "ability_warrior_innerrage.png",

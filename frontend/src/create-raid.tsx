@@ -1,7 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { useNavigate } from "react-router";
 import {
-  Box,
   Button,
   Grid,
   Group,
@@ -14,7 +13,6 @@ import {
   Text,
   Textarea,
   Title,
-  useMantineTheme,
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 
@@ -23,7 +21,7 @@ import type {
   CreateRaidResponse,
   GenericResponse,
   Instance,
-  SrCount,
+  OnChangeEvent
 } from "../types/types.ts";
 
 export function CreateRaid() {
@@ -34,8 +32,8 @@ export function CreateRaid() {
   const [instanceId, setInstanceId] = useState<number>();
   const [description, setDescription] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
-  const [useSRPlus, setUseSRPlus] = useState(false);
-  const [srCount, setSrCount] = useState<SrCount | undefined>();
+  const [useSrPlus, setUseSrPlus] = useState(false);
+  const [srCount, setSrCount] = useState<number | undefined>();
   const [time, setTime] = useState<Date>(
     new Date(
       Math.ceil((new Date()).getTime() / (60 * 30 * 1000)) * 60 * 30 * 1000,
@@ -51,12 +49,12 @@ export function CreateRaid() {
       return;
     }
     const request: CreateRaidRequest = {
-      instance_id: instanceId,
-      admin_password: adminPassword,
-      use_sr_plus: useSRPlus,
-      description: description,
+      instanceId,
+      adminPassword,
+      useSrPlus,
+      description,
       time: time.toISOString(),
-      sr_count: srCount,
+      srCount,
     };
     fetch("/api/raid/create", { method: "POST", body: JSON.stringify(request) })
       .then((r) => r.json())
@@ -64,7 +62,7 @@ export function CreateRaid() {
         if (j.error) {
           alert(j.error);
         } else if (j.data) {
-          navigate(`/${j.data.raid_id}`);
+          navigate(`/${j.data.raidId}`);
         }
       });
   }
@@ -97,12 +95,12 @@ export function CreateRaid() {
                   return { value: e.id.toString(), label: e.name };
                 })}
                 value={(instanceId || "").toString()}
-                onChange={(v) => setInstanceId(Number(v))}
+                onChange={(v: string) => setInstanceId(Number(v))}
               />
               <Textarea
                 label="Description"
                 value={description}
-                onChange={(event: any) =>
+                onChange={(event: OnChangeEvent) =>
                   setDescription(event.currentTarget.value)}
               />
 
@@ -125,28 +123,28 @@ export function CreateRaid() {
                   w="100%"
                   withItemsBorders={false}
                   value={srCount?.toString()}
-                  onChange={(value) => setSrCount(Number(value))}
+                  onChange={(value: string) => setSrCount(Number(value))}
                 />
               </Stack>
               <DateTimePicker
                 value={time}
-                onChange={(value) => {
+                onChange={(value: string) => {
                   if (value) setTime(new Date(value));
                 }}
                 label="Pick date and time"
                 placeholder="Pick date and time"
               />
               <Switch
-                value={useSRPlus ? 1 : 0}
-                onChange={(event: any) =>
-                  setUseSRPlus(event.currentTarget.value)}
+                value={useSrPlus ? 1 : 0}
+                onChange={(event: OnChangeEvent) =>
+                  setUseSrPlus(event.currentTarget.value ? true : false)}
                 label="Use SR+"
               />
               <PasswordInput
                 label="Admin password"
                 value={adminPassword}
                 withAsterisk={adminPassword == ""}
-                onChange={(event: any) =>
+                onChange={(event: OnChangeEvent) =>
                   setAdminPassword(event.currentTarget.value)}
                 description="Anyone with the admin password can become admin of the raid"
               />

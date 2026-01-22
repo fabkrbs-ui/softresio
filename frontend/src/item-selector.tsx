@@ -1,53 +1,40 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
-import { memo } from "preact/compat";
+import { useEffect, useState } from "preact/hooks";
 import type {
   Character,
   CreateSrRequest,
   GenericResponse,
   Item,
   Sheet,
+  OnChangeEvent
 } from "../types/types.ts";
 import {
-  IconChevronDown,
-  IconChevronUp,
   IconSearch,
 } from "@tabler/icons-react";
 import {
-  ActionIcon,
-  Box,
   Button,
   Checkbox,
   CloseButton,
-  Collapse,
-  Divider,
-  Flex,
   Group,
-  HoverCard,
   Image,
   Input,
   Modal,
-  MultiSelect,
-  NavLink,
   Paper,
-  ScrollArea,
   Select,
   Stack,
   TextInput,
   Title,
   Tooltip,
 } from "@mantine/core";
-import { useClickOutside, useHover, useToggle } from "@mantine/hooks";
+import {useHover} from "@mantine/hooks";
 import { useLongPress } from "use-long-press";
 import { classes, classIcons } from "./classes.ts";
 import type { SelectProps } from "@mantine/core";
 import { useDebounce } from "use-debounce";
-import { Spotlight, spotlight } from "@mantine/spotlight";
-import type { SpotlightActionData } from "@mantine/spotlight";
 import "./tooltip.css";
 import { List } from "react-window";
 import { type RowComponentProps } from "react-window";
 
-const isTouchScreen = window.matchMedia("(pointer: coarse)").matches;
+const isTouchScreen = globalThis.matchMedia("(pointer: coarse)").matches;
 
 const ClassIcon = ({ iconId }: { iconId: string }) => {
   return (
@@ -61,7 +48,7 @@ const ClassIcon = ({ iconId }: { iconId: string }) => {
 };
 
 const renderSelectOption: SelectProps["renderOption"] = (
-  { option, checked },
+  { option },
 ) => (
   <Group gap="xs">
     <ClassIcon iconId={option.value} />
@@ -214,7 +201,7 @@ export function ItemSelector(
           <Title order={2}>Choose your SR</Title>
           <TextInput
             value={characterName}
-            onChange={(event: any) =>
+            onChange={(event: OnChangeEvent) =>
               setCharacterName(event.currentTarget.value)}
             label="Character name"
             placeholder="Character name"
@@ -224,7 +211,7 @@ export function ItemSelector(
               placeholder="Class"
               searchable
               value={selectedClass}
-              onChange={(value) => {
+              onChange={(value: string) => {
                 setSelectedSpec(null);
                 setSelectedClass(value);
               }}
@@ -240,10 +227,7 @@ export function ItemSelector(
               disabled={!selectedClass}
               onChange={setSelectedSpec}
               value={selectedSpec}
-              data={classes[selectedClass]?.map((spec) => ({
-                value: (selectedClass + spec).replace(" ", ""),
-                label: spec,
-              }))}
+              data={selectedClass ? classes[selectedClass] : []}
               renderOption={renderSelectOption}
               leftSection={selectedSpec
                 ? <ClassIcon iconId={selectedSpec} />
