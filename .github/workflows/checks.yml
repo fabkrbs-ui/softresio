@@ -1,0 +1,48 @@
+name: Checks
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+jobs:
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "frontend"
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Install dependencies
+        run: "deno install"
+      - name: Formatting
+        continue-on-error: true
+        run: "deno fmt --check src"
+      - name: Types
+        run: "deno check src"
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "backend"
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Install dependencies
+        run: "deno install"
+      - name: Formatting
+        continue-on-error: true
+        run: "deno fmt --check src"
+      - name: Types
+        run: "deno check src"
