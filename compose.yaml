@@ -7,6 +7,7 @@ services:
       - "127.0.0.1:8000:5173"
     volumes:
       - "./frontend/src:/app/src:ro"
+      - "./frontend/css:/app/css:ro"
       - "./frontend/public:/app/public:ro"
       - "./types:/app/types:ro"
   backend:

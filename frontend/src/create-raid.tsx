@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router"
 import {
   Button,
   Grid,
@@ -13,39 +13,39 @@ import {
   Text,
   Textarea,
   Title,
-} from "@mantine/core";
-import { DateTimePicker } from "@mantine/dates";
+} from "@mantine/core"
+import { DateTimePicker } from "@mantine/dates"
 
 import type {
   CreateRaidRequest,
   CreateRaidResponse,
   GenericResponse,
-  Instance
-} from "../types/types.ts";
+  Instance,
+} from "../types/types.ts"
 
 export function CreateRaid() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [instances, setInstances] = useState<Instance[]>();
+  const [instances, setInstances] = useState<Instance[]>()
 
-  const [instanceId, setInstanceId] = useState<number>();
-  const [description, setDescription] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
-  const [useSrPlus, setUseSrPlus] = useState(false);
-  const [srCount, setSrCount] = useState<number | undefined>();
+  const [instanceId, setInstanceId] = useState<number>()
+  const [description, setDescription] = useState("")
+  const [adminPassword, setAdminPassword] = useState("")
+  const [useSrPlus, setUseSrPlus] = useState(false)
+  const [srCount, setSrCount] = useState<number | undefined>()
   const [time, setTime] = useState<Date>(
     new Date(
       Math.ceil((new Date()).getTime() / (60 * 30 * 1000)) * 60 * 30 * 1000,
     ),
-  );
+  )
 
   function createRaid() {
     if (
       instanceId == undefined || adminPassword == undefined ||
       srCount == undefined
     ) {
-      alert("Missing information");
-      return;
+      alert("Missing information")
+      return
     }
     const request: CreateRaidRequest = {
       instanceId,
@@ -54,16 +54,16 @@ export function CreateRaid() {
       description,
       time: time.toISOString(),
       srCount,
-    };
+    }
     fetch("/api/raid/create", { method: "POST", body: JSON.stringify(request) })
       .then((r) => r.json())
       .then((j: GenericResponse<CreateRaidResponse>) => {
         if (j.error) {
-          alert(j.error);
+          alert(j.error)
         } else if (j.data) {
-          navigate(`/${j.data.raidId}`);
+          navigate(`/${j.data.raidId}`)
         }
-      });
+      })
   }
 
   useEffect(() => {
@@ -71,12 +71,12 @@ export function CreateRaid() {
       .then((r) => r.json())
       .then((j: GenericResponse<Instance[]>) => {
         if (j.error) {
-          alert(j.error);
+          alert(j.error)
         } else if (j.data) {
-          setInstances(j.data);
+          setInstances(j.data)
         }
-      });
-  }, []);
+      })
+  }, [])
 
   return (
     <>
@@ -91,7 +91,7 @@ export function CreateRaid() {
                 searchable
                 placeholder="Select instance"
                 data={instances?.map((e) => {
-                  return { value: e.id.toString(), label: e.name };
+                  return { value: e.id.toString(), label: e.name }
                 })}
                 value={(instanceId || "").toString()}
                 onChange={(v) => setInstanceId(Number(v))}
@@ -99,8 +99,7 @@ export function CreateRaid() {
               <Textarea
                 label="Description"
                 value={description}
-                onChange={(event) =>
-                  setDescription(event.currentTarget.value)}
+                onChange={(event) => setDescription(event.currentTarget.value)}
               />
 
               <Stack gap={0}>
@@ -128,7 +127,7 @@ export function CreateRaid() {
               <DateTimePicker
                 value={time}
                 onChange={(value) => {
-                  if (value) setTime(new Date(value));
+                  if (value) setTime(new Date(value))
                 }}
                 label="Pick date and time"
                 placeholder="Pick date and time"
@@ -159,5 +158,5 @@ export function CreateRaid() {
         </Grid.Col>
       </Grid>
     </>
-  );
+  )
 }

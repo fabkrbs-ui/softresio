@@ -1,4 +1,4 @@
-export const classes: {[className: string]: string[]} = {
+export const classes: { [className: string]: string[] } = {
   "Warrior": [
     "Arms",
     "Fury",
@@ -44,9 +44,9 @@ export const classes: {[className: string]: string[]} = {
     "Marksmanship",
     "Survival",
   ],
-};
+}
 
-export const classIcons: {[classSpec: string]: string} = {
+export const classIcons: { [classSpec: string]: string } = {
   "Warrior": "class_warrior.png",
   "WarriorArms": "ability_rogue_eviscerate.png",
   "WarriorFury": "ability_warrior_innerrage.png",
@@ -83,4 +83,4 @@ export const classIcons: {[classSpec: string]: string} = {
   "DruidBalance": "spell_nature_starfall.png",
   "DruidFeralCombat": "ability_racial_bearform.png",
   "DruidRestoration": "spell_nature_healingtouch.png",
-};
+}

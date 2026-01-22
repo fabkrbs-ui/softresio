@@ -7,15 +7,15 @@ import {
   Image,
   ScrollArea,
   Stack,
-} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import logo from "../public/logo-orange.png";
-import classes from "./menu.module.css";
-import { NavLink } from "react-router";
+} from "@mantine/core"
+import { useDisclosure } from "@mantine/hooks"
+import logo from "../public/logo-orange.png"
+import classes from "../css/menu.module.css"
+import { NavLink } from "react-router"
 
 export function Menu() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
-    useDisclosure(false);
+    useDisclosure(false)
 
   return (
     <Box pb={20}>
@@ -70,6 +70,6 @@ export function Menu() {
         </ScrollArea>
       </Drawer>
     </Box>
-  );
+  )
 }
 /* <IconChevronDown size={16} color={theme.colors.blue[6]} /> */

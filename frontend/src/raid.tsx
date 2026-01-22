@@ -1,36 +1,27 @@
-import { useEffect, useState } from "react";
-import type {
-  GenericResponse,
-  Instance,
-  Sheet,
-  User,
-} from "../types/types.ts";
-import { useParams } from "react-router";
-import { ItemSelector } from "./item-selector.tsx";
-import {
-  Grid,
-  Paper,
-  Title,
-} from "@mantine/core";
+import { useEffect, useState } from "react"
+import type { GenericResponse, Instance, Sheet, User } from "../types/types.ts"
+import { useParams } from "react-router"
+import { ItemSelector } from "./item-selector.tsx"
+import { Grid, Paper, Title } from "@mantine/core"
 
 export const Raid = () => {
-  const params = useParams();
-  const [sheet, setSheet] = useState<Sheet>();
-  const [_user, setUser] = useState<User>();
-  const [instance, setInstance] = useState<Instance>();
+  const params = useParams()
+  const [sheet, setSheet] = useState<Sheet>()
+  const [_user, setUser] = useState<User>()
+  const [instance, setInstance] = useState<Instance>()
 
   useEffect(() => {
     fetch(`/api/raid/${params.raid_id}`).then((r) => r.json()).then(
       (j: GenericResponse<Sheet>) => {
         if (j.error) {
-          alert(j.error);
+          alert(j.error)
         } else if (j.data) {
-          setUser(j.user);
-          setSheet(j.data);
+          setUser(j.user)
+          setSheet(j.data)
         }
       },
-    );
-  }, []);
+    )
+  }, [])
 
   useEffect(() => {
     if (sheet) {
@@ -38,20 +29,20 @@ export const Raid = () => {
         .then((r) => r.json())
         .then((j: GenericResponse<Instance[]>) => {
           if (j.error) {
-            alert(j.error);
+            alert(j.error)
           } else if (j.data) {
             const matches = j.data.filter((i: Instance) =>
               i.id == sheet.instanceId
-            );
+            )
             if (matches.length == 1) {
-              setInstance(matches[0]);
+              setInstance(matches[0])
             } else {
-              alert("Could not find instance");
+              alert("Could not find instance")
             }
           }
-        });
+        })
     }
-  }, [sheet]);
+  }, [sheet])
 
   if (sheet && instance) {
     return (
@@ -71,6 +62,6 @@ export const Raid = () => {
           </Grid.Col>
         </Grid>
       </>
-    );
+    )
   }
 }

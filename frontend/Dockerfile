@@ -10,5 +10,6 @@ RUN deno install
 COPY frontend/src/ ./src/
 COPY frontend/types/ ./types/
 COPY frontend/public/ ./public/
+COPY frontend/css/ ./css/
 
 CMD ["deno", "run", "dev", "--host", "0.0.0.0"]
