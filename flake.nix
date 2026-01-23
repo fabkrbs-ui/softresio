@@ -17,7 +17,13 @@
       default = pkgs.mkShell {
         packages = with pkgs; [
           deno
+          pre-commit
         ];
+        shellHook = ''
+          pre-commit install
+          (cd frontend && deno install)
+          (cd backend && deno install)
+        '';
       };
     });
   };
