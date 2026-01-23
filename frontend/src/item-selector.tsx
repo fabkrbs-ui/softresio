@@ -61,7 +61,7 @@ const ItemComponent = ({
 }: {
   onItemClick: (itemId: number) => void
   onItemLongClick: (itemId: number) => void
-  selectedItemIds: number[]
+  selectedItemIds?: number[]
   showTooltipItemId?: number
   item: Item
   deleteMode?: boolean
@@ -119,7 +119,7 @@ const ItemComponent = ({
         </Group>
         {deleteMode
           ? <CloseButton />
-          : <Checkbox checked={selectedItemIds.includes(item.id)} size="md" />}
+          : <Checkbox checked={selectedItemIds?.includes(item.id)} size="md" />}
       </Group>
     </Tooltip>
   )
@@ -175,7 +175,10 @@ export function ItemSelector(
   const [slotFilter, setSlotFilter] = useState<string | null>()
   const [typeFilter, setTypeFilter] = useState<string | null>()
 
-  const onItemLongClick = (item_id: number) => setShowTooltipItemId(item_id)
+  const onItemLongClick = (itemId: number) =>
+    showTooltipItemId === itemId
+      ? setShowTooltipItemId(undefined)
+      : setShowTooltipItemId(itemId)
 
   const submitSr = () => {
     if (
@@ -342,10 +345,8 @@ export function ItemSelector(
                   <ItemComponent
                     item={items.filter((i) => i.id == itemId)[0]}
                     onItemClick={onItemClick}
+                    onItemLongClick={() => {}}
                     deleteMode
-                    selectedItemIds={selectedItemIds}
-                    showTooltipItemId={showTooltipItemId}
-                    onItemLongClick={onItemLongClick}
                   />
                 ))}
                 {Array.from({ length: sheet.srCount - selectedItemIds.length })
@@ -380,7 +381,10 @@ export function ItemSelector(
       </Paper>
       <Modal
         opened={searchOpen}
-        onClose={() => setSearchOpen(false)}
+        onClose={() => {
+          setShowTooltipItemId(undefined)
+          setSearchOpen(false)
+        }}
         withCloseButton={false}
         styles={{
           body: { height: "90dvh" },
@@ -392,6 +396,7 @@ export function ItemSelector(
               w="100%"
               value={search}
               onChange={(event) => setSearch(event.currentTarget.value)}
+              onFocus={() => setShowTooltipItemId(undefined)}
               leftSection={<IconSearch size={16} />}
               rightSection={
                 <CloseButton
@@ -403,13 +408,19 @@ export function ItemSelector(
               rightSectionPointerEvents="auto"
               placeholder="Search.."
             />
-            <CloseButton onClick={() => setSearchOpen(false)} />
+            <CloseButton
+              onClick={() => {
+                setShowTooltipItemId(undefined)
+                setSearchOpen(false)
+              }}
+            />
           </Group>
           <Group grow>
             <Select
               placeholder="Slot"
               searchable
               clearable
+              onFocus={() => setShowTooltipItemId(undefined)}
               value={slotFilter}
               onChange={(value) => {
                 setSlotFilter(value)
@@ -420,6 +431,7 @@ export function ItemSelector(
             <Select
               placeholder="Type"
               disabled={!slotFilter || itemSlots[slotFilter].length == 0}
+              onFocus={() => setShowTooltipItemId(undefined)}
               searchable
               clearable
               value={typeFilter || null}
