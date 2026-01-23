@@ -105,8 +105,6 @@ const getOrCreateUser = async (c: Context): Promise<User> => {
   return user
 }
 
-app.use("*", serveStatic({ root: "./static" }))
-
 app.get("/api/instances", async (c) => {
   const user = await getOrCreateUser(c)
   const response: GenericResponse<Instance[]> = { data: instances, user }
@@ -191,5 +189,9 @@ app.get("/api/raid/:raidId", async (c) => {
   const response: GenericResponse<Sheet> = { data: raid.sheet, user }
   return c.json(response)
 })
+
+// Serve the frontend
+app.use("/assets/*", serveStatic({ root: "./static" }))
+app.use("*", serveStatic({ path: "./static/index.html" }))
 
 Deno.serve(app.fetch)

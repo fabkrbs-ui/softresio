@@ -9,7 +9,6 @@ RUN deno install
 # Copy app
 COPY frontend/src/ ./src/
 COPY frontend/types/ ./types/
-COPY frontend/public/ ./public/
 COPY frontend/css/ ./css/
 
 RUN deno run build

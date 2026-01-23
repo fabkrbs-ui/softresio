@@ -9,7 +9,7 @@ import {
   Stack,
 } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
-import logo from "../public/logo-orange.png"
+import logo from "./assets/logo-orange.png"
 import classes from "../css/menu.module.css"
 import { NavLink } from "react-router"
 
