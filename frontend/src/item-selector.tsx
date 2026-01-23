@@ -30,6 +30,7 @@ import {
 import { useHover } from "@mantine/hooks"
 import { useLongPress } from "use-long-press"
 import { classes, classIcons } from "./classes.ts"
+import { itemSlots } from "./items.ts"
 import type { SelectProps } from "@mantine/core"
 import { useDebounce } from "use-debounce"
 import "../css/tooltip.css"
@@ -172,6 +173,8 @@ export function ItemSelector(
   const [filteredItems, setFilteredItems] = useState(items)
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([])
   const [showTooltipItemId, setShowTooltipItemId] = useState<number>()
+  const [slotFilter, setSlotFilter] = useState<string | null>()
+  const [typeFilter, setTypeFilter] = useState<string | null>()
 
   const onItemLongClick = (item_id: number) => setShowTooltipItemId(item_id)
 
@@ -237,10 +240,14 @@ export function ItemSelector(
   useEffect(() => {
     setFilteredItems(
       items.filter((item) =>
-        item.name.toLowerCase().includes(debouncedSearch?.toLowerCase() || "")
+        item.name.toLowerCase().includes(
+          debouncedSearch?.toLowerCase() || "",
+        ) &&
+        (!slotFilter || item.slot == slotFilter) &&
+        (!typeFilter || item.type == typeFilter)
       ),
     )
-  }, [debouncedSearch])
+  }, [debouncedSearch, slotFilter, typeFilter])
 
   const findAttendeeMe = (): Attendee | undefined =>
     sheet.attendees.filter((attendee) =>
@@ -341,7 +348,7 @@ export function ItemSelector(
               >
                 Select item(s)
               </Button>
-              <Stack gap="sm" mih={40 * sheet.srCount} justify="bottom">
+              <Stack gap={8} justify="bottom">
                 {selectedItemIds.map((itemId) => (
                   <ItemComponent
                     item={items.filter((i) => i.id == itemId)[0]}
@@ -376,7 +383,6 @@ export function ItemSelector(
       <Modal
         opened={searchOpen}
         onClose={() => setSearchOpen(false)}
-        size="auto"
         withCloseButton={false}
         styles={{
           body: { height: "90dvh" },
@@ -389,6 +395,14 @@ export function ItemSelector(
               value={search}
               onChange={(event) => setSearch(event.currentTarget.value)}
               leftSection={<IconSearch size={16} />}
+              rightSection={
+                <CloseButton
+                  onClick={() => setSearch("")}
+                  size="sm"
+                  style={{ display: search ? undefined : "none" }}
+                />
+              }
+              rightSectionPointerEvents="auto"
               placeholder="Search.."
             />
             <CloseButton onClick={() => setSearchOpen(false)} />
@@ -398,13 +412,21 @@ export function ItemSelector(
               placeholder="Slot"
               searchable
               clearable
-              data={["Trinket", "Ring", "Chest", "Head"]}
+              value={slotFilter}
+              onChange={(value) => {
+                setSlotFilter(value)
+                setTypeFilter(null)
+              }}
+              data={Object.keys(itemSlots)}
             />
             <Select
               placeholder="Type"
+              disabled={!slotFilter || itemSlots[slotFilter].length == 0}
               searchable
               clearable
-              data={["Plate", "Cloth", "Mail"]}
+              value={typeFilter || null}
+              onChange={(value) => setTypeFilter(value || undefined)}
+              data={slotFilter ? itemSlots[slotFilter] : []}
             />
           </Group>
           <List

@@ -103,6 +103,8 @@ export interface Item {
   tooltip: string;
   icon: string;
   name: string;
+  slot: string;
+  type: string;
   quality: 1 | 2 | 3 | 4 | 5;
 }
 
