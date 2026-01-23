@@ -67,8 +67,8 @@ jobs:
       - name: Formatting
         run: "deno fmt --check src"
 
-  build-and-push-image:
-    name: Build and push
+  build:
+    name: Build
     if: github.ref == 'refs/heads/main'
     needs: [frontend-types, frontend-formatting, backend-types, backend-formatting]
     runs-on: ubuntu-latest
@@ -95,3 +95,16 @@ jobs:
           tags: "${{env.REGISTRY}}/${{ github.repository }}:latest"
           context: .
           push: true
+  deploy:
+    name : Deploy
+    if: github.ref == 'refs/heads/main'
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load deploy key
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Update deployment
+        run: 'ssh softres.io -p 2026'
