@@ -2,15 +2,15 @@ import { useEffect, useState } from "react"
 import type { GenericResponse, Instance, Sheet, User } from "../types/types.ts"
 import { useParams } from "react-router"
 import { ItemSelector } from "./item-selector.tsx"
-import { Grid, Paper, Title } from "@mantine/core"
+import { Grid, Group, Paper, Text, Title } from "@mantine/core"
 
 export const Raid = () => {
   const params = useParams()
   const [sheet, setSheet] = useState<Sheet>()
-  const [_user, setUser] = useState<User>()
+  const [user, setUser] = useState<User>()
   const [instance, setInstance] = useState<Instance>()
 
-  useEffect(() => {
+  const loadRaid = () => {
     fetch(`/api/raid/${params.raid_id}`).then((r) => r.json()).then(
       (j: GenericResponse<Sheet>) => {
         if (j.error) {
@@ -21,7 +21,9 @@ export const Raid = () => {
         }
       },
     )
-  }, [])
+  }
+
+  useEffect(loadRaid, [])
 
   useEffect(() => {
     if (sheet) {
@@ -42,9 +44,9 @@ export const Raid = () => {
           }
         })
     }
-  }, [sheet])
+  }, [sheet?.instanceId])
 
-  if (sheet && instance) {
+  if (sheet && instance && user) {
     return (
       <>
         <Grid gutter={0} justify="center">
@@ -53,10 +55,25 @@ export const Raid = () => {
               <Title>{instance.name}</Title>
             </Paper>
             <br />
-            <ItemSelector items={instance.items} sheet={sheet} />
+            <ItemSelector
+              loadRaid={loadRaid}
+              items={instance.items}
+              sheet={sheet}
+              user={user}
+            />
             <br />
             <Paper shadow="sm" p="xl">
-              SR list coming soon! (tm)
+              {sheet.attendees.map((attendee) =>
+                attendee.softReserves.map((res) => (
+                  <Group>
+                    <Text>{attendee.character.name}</Text>
+                    <Text>
+                      {instance.items.filter((item) => item.id == res.itemId)[0]
+                        .name}
+                    </Text>
+                  </Group>
+                ))
+              )}
             </Paper>
             <br />
           </Grid.Col>

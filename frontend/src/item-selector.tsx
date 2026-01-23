@@ -6,6 +6,7 @@ import type {
   GenericResponse,
   Item,
   Sheet,
+  User,
 } from "../types/types.ts"
 import { IconSearch } from "@tabler/icons-react"
 import {
@@ -87,9 +88,7 @@ const ItemComponent = ({
         style={style}
         justify="space-between"
         wrap="nowrap"
-        className={deleteMode
-          ? "item-list-element-delete"
-          : "item-list-element"}
+        className="item-list-element"
         onClick={() => onItemClick(item.id)}
         p={8}
         key={item.id}
@@ -156,7 +155,12 @@ const ReactWindowItemComponent = ({
 }
 
 export function ItemSelector(
-  { items, sheet }: { items: Item[]; sheet: Sheet },
+  { items, sheet, loadRaid, user }: {
+    items: Item[]
+    sheet: Sheet
+    loadRaid: () => void
+    user: User
+  },
 ) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [search, setSearch] = useState("")
@@ -192,6 +196,8 @@ export function ItemSelector(
       .then((j: GenericResponse<null>) => {
         if (j.error) {
           alert(j.error)
+        } else {
+          loadRaid()
         }
       })
   }
@@ -234,6 +240,34 @@ export function ItemSelector(
       ),
     )
   }, [debouncedSearch])
+
+  const findAttendeeMe = () =>
+    sheet.attendees.filter((attendee) =>
+      attendee.user.userId === user.userId
+    )[0]
+
+  const itemIdsEqual = (a: number[], b: number[]) =>
+    a.length === b.length && a.every((itemId) => new Set(b).has(itemId))
+  const srChanged = () => {
+    const attendeeMe = findAttendeeMe()
+    return (attendeeMe.character.name !== characterName ||
+      attendeeMe.character.class !== selectedClass ||
+      attendeeMe.character.spec !== selectedSpec ||
+      !itemIdsEqual(
+        attendeeMe.softReserves.map((item) => item.itemId),
+        selectedItemIds,
+      ))
+  }
+
+  useEffect(() => {
+    const attendeeMe = findAttendeeMe()
+    if (attendeeMe) {
+      setSelectedClass(attendeeMe.character.class)
+      setSelectedSpec(attendeeMe.character.spec)
+      setCharacterName(attendeeMe.character.name)
+      setSelectedItemIds(attendeeMe.softReserves.map((sr) => sr.itemId))
+    }
+  }, [])
 
   return (
     <>
@@ -331,7 +365,7 @@ export function ItemSelector(
           </Stack>
           <Button
             disabled={!selectedClass || !selectedSpec || !characterName ||
-              selectedItemIds.length != sheet.srCount}
+              selectedItemIds.length != sheet.srCount || !srChanged()}
             onClick={submitSr}
           >
             Submit
