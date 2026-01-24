@@ -1081,7 +1081,7 @@
       "name": "Nathrezim Armor of Treachery",
       "slot": "Unknown",
       "type": null,
-      "classes": [],
+      "classes": ["Mage","Druid","Paladin"],
       "quality": 4,
       "tooltip": "<div class=\"tw-tt\"><b class=\"q4\">Nathrezim Armor of Treachery</b><span>Binds when picked up</span><div><div></div><div></div></div><span>Classes: Warrior, Priest, Warlock, Druid<br/>Requires Level 60</span></div>",
       "icon": "inv_chest_cloth_45.png"
