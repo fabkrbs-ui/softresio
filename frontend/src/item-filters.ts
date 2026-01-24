@@ -1,4 +1,4 @@
-export const itemSlots: { [slot: string]: string[] } = {
+export const itemFilters: { [slot: string]: string[] } = {
   "Back": [],
   "Legs": [
     "Leather",

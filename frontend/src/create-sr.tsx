@@ -1,0 +1,232 @@
+import { useEffect, useState } from "react"
+import type {
+  Attendee,
+  Character,
+  Class,
+  CreateSrRequest,
+  CreateSrResponse,
+  Item,
+  Sheet,
+  User,
+} from "../types/types.ts"
+import {
+  Button,
+  Group,
+  Paper,
+  Select,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core"
+import { classes } from "./class.tsx"
+import type { SelectProps } from "@mantine/core"
+import "../css/tooltip.css"
+import { ItemPicker } from "./item-picker.tsx"
+import { ItemComponent } from "./item.tsx"
+import { ClassIcon } from "./class.tsx"
+
+export const CreateSr = (
+  { items, sheet, loadRaid, user }: {
+    items: Item[]
+    sheet: Sheet
+    loadRaid: (sheet?: Sheet) => void
+    user: User
+  },
+) => {
+  const [itemPickerOpen, setItemPickerOpen] = useState(false)
+  const [selectedClass, setSelectedClass] = useState<Class | null>()
+  const [selectedSpec, setSelectedSpec] = useState<string | null>()
+  const [characterName, setCharacterName] = useState("")
+  const [selectedItemIds, setSelectedItemIds] = useState<number[]>([])
+
+  const submitSr = () => {
+    if (
+      selectedClass == undefined || selectedSpec == undefined ||
+      characterName == undefined
+    ) {
+      return
+    }
+    const character: Character = {
+      name: characterName,
+      class: selectedClass,
+      spec: selectedSpec,
+    }
+    const request: CreateSrRequest = {
+      raidId: sheet.raidId,
+      character,
+      selectedItemIds,
+    }
+    fetch("/api/sr/create", { method: "POST", body: JSON.stringify(request) })
+      .then((r) => r.json())
+      .then((j: CreateSrResponse) => {
+        if (j.error) {
+          alert(j.error)
+        } else if (j.data) {
+          loadRaid(j.data)
+        }
+      })
+  }
+
+  const renderClass: SelectProps["renderOption"] = (
+    { option },
+  ) => (
+    <Group gap="xs">
+      <ClassIcon xclass={option.value} />
+      {option.label}
+    </Group>
+  )
+
+  const renderSpec: SelectProps["renderOption"] = (
+    { option },
+  ) => (selectedClass
+    ? (
+      <Group gap="xs">
+        <ClassIcon xclass={selectedClass} spec={option.value} />
+        {option.label}
+      </Group>
+    )
+    : null)
+
+  const findAttendeeMe = (): Attendee | undefined =>
+    sheet.attendees.filter((attendee) =>
+      attendee.user.userId === user.userId
+    )[0]
+
+  const itemIdsEqual = (a: number[], b: number[]) =>
+    a.length === b.length && a.every((itemId) => new Set(b).has(itemId))
+  const srChanged = () => {
+    const attendeeMe = findAttendeeMe()
+    return (!attendeeMe || (attendeeMe.character.name !== characterName ||
+      attendeeMe.character.class !== selectedClass ||
+      attendeeMe.character.spec !== selectedSpec ||
+      !itemIdsEqual(
+        attendeeMe.softReserves.map((item) => item.itemId),
+        selectedItemIds,
+      )))
+  }
+
+  useEffect(() => {
+    const attendeeMe = findAttendeeMe()
+    if (attendeeMe) {
+      setSelectedClass(attendeeMe.character.class)
+      setSelectedSpec(attendeeMe.character.spec)
+      setCharacterName(attendeeMe.character.name)
+      setSelectedItemIds(attendeeMe.softReserves.map((sr) => sr.itemId))
+    }
+  }, [])
+
+  return (
+    <Paper shadow="sm" p="md">
+      <Stack>
+        <Title order={2}>Choose your SR</Title>
+        <TextInput
+          withAsterisk={!characterName}
+          value={characterName}
+          onChange={(event) => setCharacterName(event.currentTarget.value)}
+          label="Character name"
+          placeholder="Character name"
+        />
+        <Group>
+          <Select
+            placeholder="Class"
+            searchable
+            withAsterisk={!selectedClass}
+            value={selectedClass}
+            onChange={(value) => {
+              setSelectedSpec(null)
+              setSelectedClass(value as Class)
+            }}
+            data={Object.keys(classes)}
+            label="Class"
+            renderOption={renderClass}
+            leftSection={selectedClass
+              ? <ClassIcon xclass={selectedClass} />
+              : undefined}
+          />
+          <Select
+            placeholder="Specialization"
+            withAsterisk={!selectedSpec}
+            disabled={!selectedClass}
+            onChange={setSelectedSpec}
+            value={selectedSpec}
+            data={selectedClass ? classes[selectedClass] : []}
+            renderOption={renderSpec}
+            leftSection={selectedSpec && selectedClass
+              ? <ClassIcon xclass={selectedClass} spec={selectedSpec} />
+              : undefined}
+            label="Specialization"
+          />
+        </Group>
+        <Stack gap={0}>
+          <Group mb={3} p={0} gap={3}>
+            <Text size="sm">
+              Items
+            </Text>
+            <Text
+              size="sm"
+              c="var(--mantine-color-error)"
+              hidden={selectedItemIds.length == sheet.srCount}
+            >
+              *
+            </Text>
+          </Group>
+          <Paper
+            shadow="sm"
+            p="md"
+            style={{ backgroundColor: "var(--mantine-color-dark-8" }}
+          >
+            <Stack gap="sm" justify="bottom">
+              {selectedItemIds.map((itemId) => (
+                <ItemComponent
+                  item={items.filter((i) => i.id == itemId)[0]}
+                  onItemClick={() =>
+                    setSelectedItemIds(
+                      selectedItemIds.filter((i) => i != itemId),
+                    )}
+                  onItemLongClick={() => {}}
+                  deleteMode
+                />
+              ))}
+              {Array.from({
+                length: sheet.srCount - selectedItemIds.length,
+              })
+                .map(() => (
+                  <Button
+                    w="100%"
+                    h={44}
+                    onClick={() => setItemPickerOpen(true)}
+                    variant="default"
+                  >
+                    Select item
+                  </Button>
+                ))}
+              <Text
+                size="sm"
+                c="var(--mantine-color-error)"
+                hidden={selectedItemIds.length <= sheet.srCount}
+              >
+                You must SR exactly {sheet.srCount} item(s)
+              </Text>
+            </Stack>
+          </Paper>
+        </Stack>
+        <Button
+          disabled={!selectedClass || !selectedSpec || !characterName ||
+            selectedItemIds.length != sheet.srCount || !srChanged()}
+          onClick={submitSr}
+        >
+          Submit
+        </Button>
+      </Stack>
+      <ItemPicker
+        selectedItemIds={selectedItemIds}
+        setSelectedItemIds={setSelectedItemIds}
+        items={items}
+        open={itemPickerOpen}
+        setOpen={setItemPickerOpen}
+        selectedClass={selectedClass || null}
+      />
+    </Paper>
+  )
+}

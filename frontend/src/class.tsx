@@ -1,3 +1,19 @@
+import { Image } from "@mantine/core"
+
+export const ClassIcon = (
+  { spec, xclass }: { xclass: string; spec?: string },
+) => {
+  const icon = `${xclass}${spec ? spec.replace(" ", "") : ""}`
+  return (
+    <Image
+      radius="sm"
+      h={20}
+      w={20}
+      src={`https://talents.turtlecraft.gg/icons/${classIcons[icon]}`}
+    />
+  )
+}
+
 export const classes: { [className: string]: string[] } = {
   "Warrior": [
     "Arms",
