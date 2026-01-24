@@ -6,7 +6,7 @@ import type { Class, Item } from "../types/types.ts"
 import { useDebounce } from "use-debounce"
 import { List } from "react-window"
 
-import { ReactWindowItemComponent } from "./item.tsx"
+import { ReactWindowSelectableItem } from "./item.tsx"
 
 export const ItemPicker = ({
   selectedItemIds,
@@ -140,7 +140,7 @@ export const ItemPicker = ({
           />
         </Group>
         <List
-          rowComponent={ReactWindowItemComponent}
+          rowComponent={ReactWindowSelectableItem}
           rowCount={filteredItems.length}
           rowHeight={40}
           rowProps={{

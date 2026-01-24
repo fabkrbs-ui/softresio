@@ -23,7 +23,7 @@ import { classes } from "./class.tsx"
 import type { SelectProps } from "@mantine/core"
 import "../css/tooltip.css"
 import { ItemPicker } from "./item-picker.tsx"
-import { ItemComponent } from "./item.tsx"
+import { SelectableItem } from "./item.tsx"
 import { ClassIcon } from "./class.tsx"
 
 export const CreateSr = (
@@ -82,7 +82,7 @@ export const CreateSr = (
   ) => (selectedClass
     ? (
       <Group gap="xs">
-        <ClassIcon xclass={selectedClass} spec={option.value} />
+        <ClassIcon xclass={selectedClass} spec={option.value || null} />
         {option.label}
       </Group>
     )
@@ -140,9 +140,7 @@ export const CreateSr = (
             data={Object.keys(classes)}
             label="Class"
             renderOption={renderClass}
-            leftSection={selectedClass
-              ? <ClassIcon xclass={selectedClass} />
-              : undefined}
+            leftSection={<ClassIcon xclass={selectedClass} />}
           />
           <Select
             placeholder="Specialization"
@@ -152,9 +150,9 @@ export const CreateSr = (
             value={selectedSpec}
             data={selectedClass ? classes[selectedClass] : []}
             renderOption={renderSpec}
-            leftSection={selectedSpec && selectedClass
-              ? <ClassIcon xclass={selectedClass} spec={selectedSpec} />
-              : undefined}
+            leftSection={
+              <ClassIcon xclass={selectedClass} spec={selectedSpec} />
+            }
             label="Specialization"
           />
         </Group>
@@ -178,7 +176,7 @@ export const CreateSr = (
           >
             <Stack gap="sm" justify="bottom">
               {selectedItemIds.map((itemId) => (
-                <ItemComponent
+                <SelectableItem
                   item={items.filter((i) => i.id == itemId)[0]}
                   onItemClick={() =>
                     setSelectedItemIds(

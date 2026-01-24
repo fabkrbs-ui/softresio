@@ -13,7 +13,32 @@ import {
 
 const isTouchScreen = globalThis.matchMedia("(pointer: coarse)").matches
 
-export const ItemComponent = ({
+export const ItemNameAndIcon = ({ item }: { item: Item }) => (
+  <Group wrap="nowrap">
+    <Image
+      onClick={(e) => {
+        e.stopPropagation()
+        globalThis.open(
+          `https://database.turtlecraft.gg/?item=${item.id}`,
+        )
+      }}
+      style={{
+        filter: "drop-shadow(0px 0px 2px)",
+        border: "1px solid rgba(255,255,255,0.3)",
+      }}
+      className={`q${item.quality}`}
+      radius="sm"
+      h={24}
+      w={24}
+      src={`https://database.turtlecraft.gg/images/icons/medium/${item.icon}`}
+    />
+    <Title className={`q${item.quality}`} order={6} lineClamp={1}>
+      {item.name}
+    </Title>
+  </Group>
+)
+
+export const SelectableItem = ({
   item,
   onItemClick,
   onItemLongClick,
@@ -68,28 +93,7 @@ export const ItemComponent = ({
         key={item.id}
         mr={deleteMode ? 0 : 10}
       >
-        <Group wrap="nowrap">
-          <Image
-            onClick={(e) => {
-              e.stopPropagation()
-              globalThis.open(
-                `https://database.turtlecraft.gg/?item=${item.id}`,
-              )
-            }}
-            style={{
-              filter: "drop-shadow(0px 0px 2px)",
-              border: "1px solid rgba(255,255,255,0.3)",
-            }}
-            className={`q${item.quality}`}
-            radius="sm"
-            h={24}
-            w={24}
-            src={`https://database.turtlecraft.gg/images/icons/medium/${item.icon}`}
-          />
-          <Title className={`q${item.quality}`} order={6} lineClamp={1}>
-            {item.name}
-          </Title>
-        </Group>
+        <ItemNameAndIcon item={item} />
         {deleteMode
           ? <CloseButton />
           : <Checkbox checked={selectedItemIds?.includes(item.id)} size="md" />}
@@ -98,7 +102,7 @@ export const ItemComponent = ({
   )
 }
 
-export const ReactWindowItemComponent = ({
+export const ReactWindowSelectableItem = ({
   index,
   items,
   selectedItemIds,
@@ -116,7 +120,7 @@ export const ReactWindowItemComponent = ({
   deleteMode?: boolean
 }>) => {
   return (
-    <ItemComponent
+    <SelectableItem
       item={items[index]}
       selectedItemIds={selectedItemIds}
       onItemClick={onItemClick}

@@ -9,6 +9,7 @@ import type {
 import { useParams } from "react-router"
 import { Grid, Group, Paper, Text, Title } from "@mantine/core"
 import { CreateSr } from "./create-sr.tsx"
+import { ItemNameAndIcon } from "./item.tsx"
 
 export const Raid = () => {
   const params = useParams()
@@ -77,8 +78,11 @@ export const Raid = () => {
                   <Group>
                     <Text>{attendee.character.name}</Text>
                     <Text>
-                      {instance.items.filter((item) => item.id == res.itemId)[0]
-                        .name}
+                      <ItemNameAndIcon
+                        item={instance.items.filter((item) =>
+                          item.id == res.itemId
+                        )[0]}
+                      />
                     </Text>
                   </Group>
                 ))

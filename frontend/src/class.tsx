@@ -1,15 +1,17 @@
 import { Image } from "@mantine/core"
 
 export const ClassIcon = (
-  { spec, xclass }: { xclass: string; spec?: string },
+  { spec, xclass }: { xclass?: string | null; spec?: string | null },
 ) => {
-  const icon = `${xclass}${spec ? spec.replace(" ", "") : ""}`
+  const icon = !xclass || spec === null
+    ? "inv_misc_questionmark.png"
+    : classIcons[`${xclass}${spec ? spec.replace(" ", "") : ""}`]
   return (
     <Image
-      radius="sm"
+      radius={2}
       h={20}
       w={20}
-      src={`https://talents.turtlecraft.gg/icons/${classIcons[icon]}`}
+      src={`https://database.turtlecraft.gg/images/icons/medium/${icon}`}
     />
   )
 }
