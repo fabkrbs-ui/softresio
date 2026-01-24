@@ -122,6 +122,7 @@ export const CreateSr = (
         <Title order={2}>Choose your SR</Title>
         <TextInput
           withAsterisk={!characterName}
+          maxLength={12}
           value={characterName}
           onChange={(event) => setCharacterName(event.currentTarget.value)}
           label="Character name"
