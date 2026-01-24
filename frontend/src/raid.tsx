@@ -72,7 +72,7 @@ export const Raid = () => {
               user={user}
             />
             <br />
-            <Paper shadow="sm" p="xl">
+            <Paper shadow="sm" p="md">
               <SrList attendees={sheet.attendees} items={instance.items} />
             </Paper>
             <br />

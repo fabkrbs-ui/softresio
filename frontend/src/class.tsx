@@ -1,5 +1,6 @@
 import type { Character } from "../types/types.ts"
 import { Group, Image, Title, Tooltip } from "@mantine/core"
+import type { SelectProps } from "@mantine/core"
 
 export const CharacterNameClassSpec = (
   { character }: { character: Character },
@@ -13,6 +14,15 @@ export const CharacterNameClassSpec = (
       </Title>
     </Group>
   </Tooltip>
+)
+
+export const renderClass: SelectProps["renderOption"] = (
+  { option },
+) => (
+  <Group gap="xs">
+    <ClassIcon xclass={option.value} />
+    {option.label}
+  </Group>
 )
 
 export const ClassIcon = (

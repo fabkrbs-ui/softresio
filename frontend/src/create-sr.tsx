@@ -24,7 +24,7 @@ import type { SelectProps } from "@mantine/core"
 import "../css/tooltip.css"
 import { ItemPicker } from "./item-picker.tsx"
 import { SelectableItem } from "./item.tsx"
-import { ClassIcon } from "./class.tsx"
+import { ClassIcon, renderClass } from "./class.tsx"
 
 export const CreateSr = (
   { items, sheet, loadRaid, user }: {
@@ -67,15 +67,6 @@ export const CreateSr = (
         }
       })
   }
-
-  const renderClass: SelectProps["renderOption"] = (
-    { option },
-  ) => (
-    <Group gap="xs">
-      <ClassIcon xclass={option.value} />
-      {option.label}
-    </Group>
-  )
 
   const renderSpec: SelectProps["renderOption"] = (
     { option },
