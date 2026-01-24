@@ -1,0 +1,8 @@
+repos:
+- repo: local
+  hooks:
+    - id: check-everything
+      name: check-everything
+      entry: bash ./check-everything.sh
+      language: system
+
