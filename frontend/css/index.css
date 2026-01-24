@@ -4,10 +4,11 @@ body {
 
 .item-list-element {
   user-select: none;
+  -webkit-user-select: none;
   cursor: pointer;
   border-radius: 5px;
 }
 
-.item-list-element:hover {
+.item-list-element-highlight {
   background-color: var(--mantine-color-default-hover);
 }

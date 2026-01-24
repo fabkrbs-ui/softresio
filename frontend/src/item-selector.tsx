@@ -27,7 +27,7 @@ import {
   Tooltip,
 } from "@mantine/core"
 import { useHover } from "@mantine/hooks"
-import { useLongPress } from "use-long-press"
+import { LongPressCallbackReason, useLongPress } from "use-long-press"
 import { classes, classIcons } from "./classes.ts"
 import { itemSlots } from "./items.ts"
 import type { SelectProps } from "@mantine/core"
@@ -68,10 +68,16 @@ const ItemComponent = ({
   style?: React.CSSProperties
 }) => {
   const { hovered, ref } = useHover()
-  const handlers = useLongPress((event) => {
-    event.preventDefault()
-    onItemLongClick(item.id)
+  const handlers = useLongPress(() => onItemLongClick(item.id), {
+    onCancel: (_, meta) => {
+      if (meta.reason == LongPressCallbackReason.CancelledByRelease) {
+        onItemClick(item.id)
+      }
+    },
   })
+
+  const highlight = !isTouchScreen && hovered || showTooltipItemId == item.id ||
+    selectedItemIds?.includes(item.id)
 
   return (
     <Tooltip
@@ -92,8 +98,9 @@ const ItemComponent = ({
         style={style}
         justify="space-between"
         wrap="nowrap"
-        className="item-list-element"
-        onClick={() => onItemClick(item.id)}
+        className={`item-list-element ${
+          highlight ? "item-list-element-highlight" : ""
+        }`}
         p={8}
         key={item.id}
         mr={deleteMode ? 0 : 10}
@@ -113,7 +120,7 @@ const ItemComponent = ({
             className={`q${item.quality}`}
             radius="sm"
             h={24}
-            w="auto"
+            w={24}
             src={`https://database.turtlecraft.gg/images/icons/medium/${item.icon}`}
           />
           <Title className={`q${item.quality}`} order={6} lineClamp={1}>
@@ -445,8 +452,8 @@ export function ItemSelector(
               onChange={(value) => {
                 setSlotFilter(value)
                 if (
-                  slotFilter && typeFilter &&
-                  !itemSlots[slotFilter].includes(typeFilter)
+                  value && typeFilter &&
+                  !itemSlots[value].includes(value)
                 ) setTypeFilter(null)
               }}
               data={Object.keys(itemSlots)}
@@ -457,7 +464,7 @@ export function ItemSelector(
               onFocus={() => setShowTooltipItemId(undefined)}
               searchable
               clearable
-              value={typeFilter || null}
+              value={typeFilter}
               onChange={(value) => setTypeFilter(value || undefined)}
               data={slotFilter ? itemSlots[slotFilter] : []}
             />
