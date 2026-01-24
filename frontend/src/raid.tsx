@@ -7,9 +7,9 @@ import type {
   User,
 } from "../types/types.ts"
 import { useParams } from "react-router"
-import { Grid, Group, Paper, Text, Title } from "@mantine/core"
+import { Grid, Paper, Title } from "@mantine/core"
 import { CreateSr } from "./create-sr.tsx"
-import { ItemNameAndIcon } from "./item.tsx"
+import { SrList } from "./sr-list.tsx"
 
 export const Raid = () => {
   const params = useParams()
@@ -73,20 +73,7 @@ export const Raid = () => {
             />
             <br />
             <Paper shadow="sm" p="xl">
-              {sheet.attendees.map((attendee) =>
-                attendee.softReserves.map((res) => (
-                  <Group>
-                    <Text>{attendee.character.name}</Text>
-                    <Text>
-                      <ItemNameAndIcon
-                        item={instance.items.filter((item) =>
-                          item.id == res.itemId
-                        )[0]}
-                      />
-                    </Text>
-                  </Group>
-                ))
-              )}
+              <SrList attendees={sheet.attendees} items={instance.items} />
             </Paper>
             <br />
           </Grid.Col>

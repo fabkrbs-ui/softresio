@@ -1,4 +1,19 @@
-import { Image } from "@mantine/core"
+import type { Character } from "../types/types.ts"
+import { Group, Image, Title, Tooltip } from "@mantine/core"
+
+export const CharacterNameClassSpec = (
+  { character }: { character: Character },
+) => (
+  <Tooltip label={`${character.name} (${character.spec} ${character.class})`}>
+    <Group wrap="nowrap" gap={0}>
+      <ClassIcon xclass={character.class} />
+      <ClassIcon xclass={character.class} spec={character.spec} />
+      <Title order={6} lineClamp={1} ml="sm">
+        {character.name}
+      </Title>
+    </Group>
+  </Tooltip>
+)
 
 export const ClassIcon = (
   { spec, xclass }: { xclass?: string | null; spec?: string | null },
