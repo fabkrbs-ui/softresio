@@ -92,7 +92,7 @@ export const SrList = (
     <Table>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th>
+          <Table.Th w={40}>
             <Select
               data={Object.keys(classes)}
               onChange={(value) => setClassFilter(value as Class || undefined)}
@@ -103,10 +103,9 @@ export const SrList = (
               rightSectionPointerEvents="none"
               renderOption={renderClass(classFilter)}
               comboboxProps={{ width: 140, position: "bottom-start" }}
-              w={40}
             />
           </Table.Th>
-          <Table.Th>
+          <Table.Th w={120}>
             <Group wrap="nowrap" gap={0}>
               <TextInput
                 placeholder="Name"
