@@ -14,10 +14,7 @@ export const MyRaids = () => {
 
   const navigate = useNavigate()
 
-  const loadRaids = (raidList?: Raid[]) => {
-    if (raidList) {
-      return setRaidList(raidList)
-    }
+  useEffect(() => {
     fetch(`/api/raids`).then((r) => {
       return r.json()
     }).then(
@@ -29,8 +26,7 @@ export const MyRaids = () => {
         }
       },
     )
-  }
-  useEffect(loadRaids, [])
+  }, [])
 
   useEffect(() => {
     fetch("/api/instances")
