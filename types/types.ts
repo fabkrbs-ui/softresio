@@ -40,7 +40,7 @@ export interface Password {
   hash: string;
 }
 
-export interface Activiy {
+export interface Activity {
   time: string; // rfc3339
   user: User;
   action:
@@ -60,7 +60,7 @@ export interface Sheet {
   attendees: Attendee[];
   admins: User[];
   password: Password;
-  activityLog: Activiy[];
+  activityLog: Activity[];
   srCount: number;
 }
 

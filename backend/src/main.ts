@@ -76,7 +76,7 @@ create or replace function notify_raid_changed()
   returns trigger
 as $$
 begin
-  perform pg_notify('raid_updated', new.raid::text);
+  perform pg_notify('raid_updated', (new.raid #- '{sheet,password}')::text);
   return null;
 end;
 $$ language plpgsql
@@ -204,8 +204,8 @@ app.post("/api/raid/create", async (c) => {
         user,
       ],
       password: {
-        hash: "yes" + adminPassword,
-        salt: "yes",
+        hash: "coming soon",
+        salt: "coming soon",
       },
     },
   }
@@ -261,20 +261,15 @@ app.get("/api/raids", async (c) => {
   const user = await getOrCreateUser(c)
   const raids = await sql<
     Raid[]
-  >`select raid->'sheet' as sheet
+  >`select raid#-'{sheet,password}'->'sheet' as sheet
       from raids
       where
-        exists (
-          select 1
-          from jsonb_array_elements(raid->'sheet'->'attendees') a
-          where a->'user'->>'userId' = ${user.userId}
-        )
+        raid @> ${{
+    sheet: { attendees: [{ user: { userId: user.userId } }] },
+  } as never}
         or
-        exists (
-          select 1
-          from jsonb_array_elements(raid->'sheet'->'admins') a
-          where a->>'userId' = ${user.userId}
-        )
+        raid @> ${{ sheet: { admins: [{ userId: user.userId }] } } as never}
+        order by raid->'sheet'->'time' desc
         ;`
   console.log(raids)
   const response: GetMyRaidsResponse = { data: raids, user }
