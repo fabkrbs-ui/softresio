@@ -21,7 +21,7 @@ function App() {
         <Box h="100dvh">
           <Menu />
           <Grid gutter={0} justify="center">
-            <Grid.Col span={{ base: 11, md: 4, lg: 3 }}>
+            <Grid.Col span={{ base: 11, md: 4, xl: 4 }}>
               <Routes>
                 <Route path="/" element={<CreateRaid />} />
                 <Route path="/create" element={<CreateRaid />} />
