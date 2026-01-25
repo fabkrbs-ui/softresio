@@ -285,4 +285,4 @@ app.get("/api/raids", async (c) => {
 app.use("/assets/*", serveStatic({ root: "./static" }))
 app.use("*", serveStatic({ path: "./static/index.html" }))
 
-Deno.serve(app.fetch)
+export default { fetch: app.fetch }
