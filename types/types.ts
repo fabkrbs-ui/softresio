@@ -3,7 +3,7 @@ export interface OnChangeEvent {
         value: string
     }
 }
-export type Class = 
+export type Class =
     | "Warrior"
     | "Mage"
     | "Paladin"
@@ -90,6 +90,8 @@ export type CreateRaidResponse = GenericResponse<{ raidId: string }>
 export type CreateSrResponse = GenericResponse<Sheet>
     
 export type GetRaidResponse = GenericResponse<Sheet>
+
+export type GetMyRaidsResponse = GenericResponse<Raid[]>;
 
 export interface CreateSrRequest {
   raidId: string;

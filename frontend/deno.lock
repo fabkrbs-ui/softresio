@@ -10,6 +10,7 @@
     "npm:@types/react-dom@^19.2.3": "19.2.3_@types+react@19.2.9",
     "npm:@types/react@^19.2.5": "19.2.9",
     "npm:@vitejs/plugin-react@^5.1.1": "5.1.2_vite@7.3.1__@types+node@24.10.9__picomatch@4.0.3_@babel+core@7.28.6_@types+node@24.10.9",
+    "npm:date-fns@^4.1.0": "4.1.0",
     "npm:eslint-plugin-react-hooks@^7.0.1": "7.0.1_eslint@9.39.2_zod@4.3.5",
     "npm:eslint-plugin-react-refresh@~0.4.24": "0.4.26_eslint@9.39.2",
     "npm:eslint@^9.39.1": "9.39.2",
@@ -866,6 +867,9 @@
     "csstype@3.2.3": {
       "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ=="
     },
+    "date-fns@4.1.0": {
+      "integrity": "sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg=="
+    },
     "dayjs@1.11.19": {
       "integrity": "sha512-t5EcLVS6QPBNqM2z8fakk/NKel+Xzshgt8FFKAn+qwlD1pzZWxh0nVCrvFK7ZDb6XucZeF9z8C7CBWTRIVApAw=="
     },
@@ -1593,6 +1597,7 @@
         "npm:@types/react-dom@^19.2.3",
         "npm:@types/react@^19.2.5",
         "npm:@vitejs/plugin-react@^5.1.1",
+        "npm:date-fns@^4.1.0",
         "npm:eslint-plugin-react-hooks@^7.0.1",
         "npm:eslint-plugin-react-refresh@~0.4.24",
         "npm:eslint@^9.39.1",

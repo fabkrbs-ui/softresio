@@ -7,9 +7,11 @@ import type {
   CreateSrRequest,
   CreateSrResponse,
   GetInstancesResponse,
+  GetMyRaidsResponse,
   GetRaidResponse,
   Instance,
   Raid,
+  Sheet,
   SoftReserve,
   User,
 } from "../types/types.ts"
@@ -254,6 +256,32 @@ app.get(
     }
   }),
 )
+
+app.get("/api/raids", async (c) => {
+  const user = await getOrCreateUser(c)
+  const raids = await sql<
+    Raid[]
+  >`select raid->'sheet' as sheet
+      from raids
+      where
+        exists (
+          select 1
+          from jsonb_array_elements(raid->'sheet'->'attendees') a
+          where a->'user'->>'userId' = ${user.userId}
+        )
+        or
+        exists (
+          select 1
+          from jsonb_array_elements(raid->'sheet'->'admins') a
+          where a->>'userId' = ${user.userId}
+        )
+        ;`
+  console.log(raids)
+  const response: GetMyRaidsResponse = { data: raids, user }
+  return c.json(response)
+})
+
+// Serve the frontend
 app.use("/assets/*", serveStatic({ root: "./static" }))
 app.use("*", serveStatic({ path: "./static/index.html" }))
 

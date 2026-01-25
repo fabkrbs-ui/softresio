@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client"
 import "../css/index.css"
 import { CreateRaid } from "./create-raid.tsx"
 import { Raid } from "./raid.tsx"
+import { MyRaids } from "./my-raids.tsx"
 import "@mantine/core/styles.css"
 import "@mantine/dates/styles.css"
 import { Box, createTheme, Grid, MantineProvider } from "@mantine/core"
@@ -25,6 +26,7 @@ function App() {
                 <Route path="/" element={<CreateRaid />} />
                 <Route path="/create" element={<CreateRaid />} />
                 <Route path="/:raid_id" element={<Raid />} />;
+                <Route path="/raids" element={<MyRaids />} />;
               </Routes>
             </Grid.Col>
           </Grid>
