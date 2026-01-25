@@ -91,8 +91,11 @@ create or replace trigger raid_updated
 await sql.listen("raid_updated", (raid) => {
   const sheet = JSON.parse(raid).sheet
   if (sheet.raidId in clients) {
-    for (const ws of clients[sheet.raidId]) {
-      ws.send(JSON.stringify(sheet))
+    console.log(
+      `raidId: ${sheet.raidId}, client: ${clients[sheet.raidId].length}`,
+    )
+    for (const client of clients[sheet.raidId]) {
+      client.ws.send(JSON.stringify(sheet))
     }
   }
 })
@@ -228,18 +231,25 @@ app.get("/api/raid/:raidId", async (c) => {
   return c.json(response)
 })
 
-const clients: { [raidId: string]: any[] } = {}
+type WebSocketSession = {
+  ws: any
+  id: string
+}
+
+const clients: { [raidId: string]: WebSocketSession[] } = {}
 
 app.get(
   "/api/ws/:raidId",
   upgradeWebSocket((c) => {
+    const id = randomUUID()
     return {
       onOpen(event, ws) {
         const raidId = c.req.param("raidId")
-        clients[raidId] = [ws, ...clients[raidId] || []]
+        clients[raidId] = [{ ws, id }, ...clients[raidId] || []]
       },
       onClose(event, ws) {
         const raidId = c.req.param("raidId")
+        clients[raidId] = clients[raidId].filter((e) => e.id != id)
       },
     }
   }),
