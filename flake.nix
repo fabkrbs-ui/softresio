@@ -18,6 +18,7 @@
         packages = with pkgs; [
           deno
           pre-commit
+          jq
         ];
         shellHook = ''
           pre-commit install
