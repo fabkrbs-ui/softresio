@@ -44,7 +44,7 @@
       "slots": [
         "Token"
       ],
-      "types": []
+      "types": ["Plate","Mail","Cloth"]
     },
     {
       "id": 19724,
@@ -87,7 +87,7 @@
       "slots": [
         "Token"
       ],
-      "types": []
+      "types": ["Mail","Leather","Cloth"]
     },
     {
       "id": 19723,
@@ -130,7 +130,7 @@
       "slots": [
         "Token"
       ],
-      "types": []
+      "types": ["Plate","Cloth"]
     },
     {
       "id": 19722,
@@ -173,7 +173,7 @@
       "slots": [
         "Token"
       ],
-      "types": []
+      "types": ["Plate","Mail","Leather"]
     },
     {
       "id": 19717,
@@ -216,7 +216,7 @@
       "slots": [
         "Token"
       ],
-      "types": []
+      "types": ["Mail","Leather","Cloth"]
     },
     {
       "id": 19716,
@@ -259,7 +259,7 @@
       "slots": [
         "Token"
       ],
-      "types": []
+      "types": ["Plate","Mail","Cloth"]
     },
     {
       "id": 19718,
@@ -302,7 +302,7 @@
       "slots": [
         "Token"
       ],
-      "types": []
+      "types": ["Leather","Cloth"]
     },
     {
       "id": 19719,
@@ -345,7 +345,7 @@
       "slots": [
         "Token"
       ],
-      "types": []
+      "types": ["Plate","Mail","Leather"]
     },
     {
       "id": 19720,
@@ -388,7 +388,7 @@
       "slots": [
         "Token"
       ],
-      "types": []
+      "types": ["Leather","Cloth"]
     },
     {
       "id": 19918,
