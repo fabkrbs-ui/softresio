@@ -1,5 +1,87 @@
 { 
   "raids": {
+    "world bosses":
+    {
+      "bosses": [
+        {
+          "name": "Azuregos",
+          "loot": [{
+            "name": "Azuregos",
+            "link": "https://database.turtlecraft.gg/?npc=6109"
+          }]
+        },
+        {
+          "name": "Emreriss",
+          "loot": [{
+            "name": "Emreriss",
+            "link": "https://database.turtlecraft.gg/?npc=14889"
+          }]
+        },
+        {
+          "name": "Lethon",
+          "loot": [{
+            "name": "Lethon",
+            "link": "https://database.turtlecraft.gg/?npc=14888"
+          }]
+        },
+        {
+          "name": "Taerar",
+          "loot": [{
+            "name": "Taerar",
+            "link": "https://database.turtlecraft.gg/?npc=14890"
+          }]
+        },
+        {
+          "name": "Ysondre",
+          "loot": [{
+            "name": "Ysondre",
+            "link": "https://database.turtlecraft.gg/?npc=14887"
+          }]
+        },
+        {
+          "name": "Kazzak",
+          "loot": [{
+            "name": "Lord Kazzak",
+            "link": "https://database.turtlecraft.gg/?npc=12397"
+          }]
+        },
+        {
+          "name": "Nerubian Overseer",
+          "loot": [{
+            "name": "Nerubian Overseer",
+            "link": "https://database.turtlecraft.gg/?npc=16184"
+          }]
+        },
+        {
+          "name": "Dark Reaver",
+          "loot": [{
+            "name": "Dark Reaver of Karazhan",
+            "link": "https://database.turtlecraft.gg/?npc=80936"
+          }]
+        },
+        {
+          "name": "Ostarius",
+          "loot": [{
+            "name": "Ostarius",
+            "link": "https://database.turtlecraft.gg/?npc=80935"
+          }]
+        },
+        {
+          "name": "Concavius",
+          "loot": [{
+            "name": "Concavius",
+            "link": "https://database.turtlecraft.gg/?npc=80936"
+          }]
+        },
+        {
+          "name": "Cla'ckora",
+          "loot": [{
+            "name": "Cla'ckora",
+            "link": "https://database.turtlecraft.gg/?npc=59963"
+          }]
+        }
+      ]
+    },
     "k40":
     {
       "bosses": [
