@@ -1,6 +1,8 @@
 import { useState } from "react"
 import {
   ActionIcon,
+  Box,
+  Button,
   Group,
   Menu,
   Select,
@@ -13,10 +15,10 @@ import {
 import { useHover } from "@mantine/hooks"
 import type {
   Attendee,
-  Class,
   Item,
-  Sheet,
+  Raid,
   SoftReserve,
+  SrPlus,
   User,
 } from "../shared/types.ts"
 import { ItemNameAndIcon } from "./item.tsx"
@@ -29,25 +31,45 @@ import {
 } from "@tabler/icons-react"
 import { classes, renderClass } from "./class.tsx"
 import { nothingItem } from "./mock-item.ts"
+import { sumSrPlus } from "../shared/utils.ts"
+import { SrPlusLog } from "./sr-plus-log.tsx"
 import { IconShieldFilled, IconTrash } from "@tabler/icons-react"
 import { modals } from "@mantine/modals"
 
 type ListElement = { attendee: Attendee; softReserve: SoftReserve }
 
 export const SrListElement = (
-  { visible, item, attendee, admins, user, owner, editAdmin, deleteSr }: {
+  {
+    visible,
+    item,
+    items,
+    attendee,
+    admins,
+    user,
+    owner,
+    editAdmin,
+    deleteSr,
+    locked,
+    srPluses,
+    guildId,
+  }: {
+    srPluses: SrPlus[]
     visible: boolean
+    locked: boolean
     item: Item
+    items: Item[]
     attendee: Attendee
     admins: User[]
     owner: User
     user: User
     editAdmin: (user: User, remove: boolean) => void
     deleteSr: () => void
+    guildId?: string
   },
 ) => {
   const { ref, hovered } = useHover()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [logOpen, setLogOpen] = useState(false)
 
   const openConfirmDeleteSrModal = () =>
     modals.openConfirmModal({
@@ -185,13 +207,41 @@ export const SrListElement = (
               highlight={false}
             />
           </Table.Td>
+          {guildId
+            ? (
+              <Table.Td ta="center" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  onClick={() => {
+                    setLogOpen(true)
+                  }}
+                  variant="subtle"
+                  color="lightgrey"
+                >
+                  {sumSrPlus(srPluses)}
+                </Button>
+                {guildId && srPluses.length > 0
+                  ? (
+                    <SrPlusLog
+                      items={items}
+                      open={logOpen}
+                      onClose={() => setLogOpen(false)}
+                      characterName={attendee.character.name}
+                      guildId={guildId}
+                      itemId={item.id}
+                      srPluses={srPluses}
+                    />
+                  )
+                  : null}
+              </Table.Td>
+            )
+            : null}
         </Table.Tr>
       </Menu.Target>
       <Menu.Dropdown>
         {promoteRemoveAdmin()}
         <Menu.Item
           onClick={openConfirmDeleteSrModal}
-          disabled={attendee.user.userId == user.userId ||
+          disabled={(attendee.user.userId == user.userId && !locked) ||
               admins.find((a) => a.userId == user.userId)
             ? false
             : true}
@@ -206,15 +256,16 @@ export const SrListElement = (
 }
 
 export const SrList = (
-  { sheet, items, user, editAdmin, deleteSr }: {
-    sheet: Sheet
+  { raid, items, user, editAdmin, deleteSr, srPluses }: {
+    srPluses: SrPlus[]
+    raid: Raid
     items: Item[]
     user: User
     editAdmin: (user: User, remove: boolean) => void
     deleteSr: (user: User, itemId: number) => void
   },
 ) => {
-  const [classFilter, setClassFilter] = useState<Class>()
+  const [classFilter, setClassFilter] = useState<string>()
   const [nameFilter, setNameFilter] = useState<string>()
   const [itemFilter, setItemFilter] = useState<string>()
   const [sortBy, setSortBy] = useState<"name" | "item" | "class">()
@@ -223,7 +274,10 @@ export const SrList = (
   const filter = (
     { attendee, softReserve }: ListElement,
   ) => ((!classFilter || attendee.character.class == classFilter) &&
-    (!nameFilter || attendee.character.name.startsWith(nameFilter)) &&
+    (!nameFilter ||
+      attendee.character.name.toLowerCase().startsWith(
+        nameFilter.toLowerCase(),
+      )) &&
     (!itemFilter ||
       (items.find((item) => item.id == softReserve.itemId) || nothingItem).name
         .toLowerCase()
@@ -250,7 +304,7 @@ export const SrList = (
     return valueA.localeCompare(valueB) * (sortDesc ? -1 : 1)
   }
 
-  const elements = sheet.attendees.flatMap((attendee) =>
+  const elements = raid.attendees.flatMap((attendee) =>
     attendee.softReserves.map((softReserve, index) => ({
       softReserve,
       attendee,
@@ -267,14 +321,19 @@ export const SrList = (
     >
       <Table.Thead>
         <Table.Tr>
-          <Table.Th w={35} maw={35}>
+          <Table.Th w={30}>
             <Select
               pb="sm"
               data={Object.keys(classes)}
-              onChange={(value) => setClassFilter(value as Class || undefined)}
+              onChange={(value) => setClassFilter(value || undefined)}
               value={classFilter}
+              rightSectionWidth={30}
               rightSection={classFilter
-                ? <ClassIcon xclass={classFilter} />
+                ? (
+                  <Box pr={12}>
+                    <ClassIcon xclass={classFilter} />
+                  </Box>
+                )
                 : undefined}
               rightSectionPointerEvents="none"
               renderOption={renderClass(classFilter)}
@@ -348,20 +407,34 @@ export const SrList = (
               </ActionIcon>
             </Group>
           </Table.Th>
+          {raid.guildId
+            ? (
+              <Table.Th ta="center" pb="sm" px={0} w={10}>
+                SR+
+              </Table.Th>
+            )
+            : null}
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
         {elements.map((e) => (
           <SrListElement
+            items={items}
+            guildId={raid.guildId}
+            locked={raid.locked}
             key={`${e.attendee.character.name}|${e.softReserve.itemId}|${e.index}`}
             visible={filter(e)}
             attendee={e.attendee}
             item={items.find((i) => i.id == e.softReserve.itemId) ||
               nothingItem}
             user={user}
-            admins={sheet.admins}
-            owner={sheet.owner}
+            admins={raid.admins}
+            owner={raid.owner}
             editAdmin={editAdmin}
+            srPluses={srPluses?.filter((sr) =>
+              sr.characterName == e.attendee.character.name &&
+              sr.itemId == e.softReserve.itemId
+            )}
             deleteSr={() => deleteSr(e.attendee.user, e.softReserve.itemId)}
           />
         ))}

@@ -3,7 +3,8 @@ import { createRoot } from "react-dom/client"
 import type { InfoResponse, User } from "../shared/types.ts"
 import "../css/index.css"
 import { CreateRaid } from "./create-raid.tsx"
-import { Raid } from "./raid.tsx"
+import { CreateGuild } from "./create-guild.tsx"
+import { RaidElement } from "./raid.tsx"
 import { MyRaids } from "./my-raids.tsx"
 import { LootBrowser } from "./loot-browser.tsx"
 import "@mantine/core/styles.css"
@@ -42,7 +43,7 @@ function App() {
     fetch("/api/info").then((r) => r.json()).then(
       (j: InfoResponse) => {
         if (j.error) {
-          alert(j.error)
+          alert(j.error.message)
         } else if (j.data) {
           setDiscordLoginEnabled(j.data.discordLoginEnabled)
           setDiscordClientId(j.data.discordClientId)
@@ -70,20 +71,28 @@ function App() {
                     <Grid.Col span={{ base: 11, md: 4, xl: 4 }}>
                       <Routes>
                         <Route path="/" element={<MyRaids user={user} />} />
+                        <Route path="/guild/create" element={<CreateGuild />} />
                         <Route path="/create" element={<CreateRaid />} />
                         <Route
                           path="/create/items"
                           element={<CreateRaid itemPickerOpen />}
                         />
-                        <Route path="/edit/:raidId" element={<CreateRaid />} />
+                        <Route
+                          path="/edit/:raidId"
+                          element={<CreateRaid edit={true} />}
+                        />
+                        <Route path="/copy/:raidId" element={<CreateRaid />} />
                         <Route
                           path="/edit/:raidId/items"
                           element={<CreateRaid itemPickerOpen />}
                         />
-                        <Route path="/:raidId" element={<Raid user={user} />} />
+                        <Route
+                          path="/:raidId"
+                          element={<RaidElement user={user} />}
+                        />
                         <Route
                           path="/:raidId/items"
-                          element={<Raid user={user} itemPickerOpen />}
+                          element={<RaidElement user={user} itemPickerOpen />}
                         />
                         <Route
                           path="/raids"
@@ -103,14 +112,15 @@ function App() {
             <Stack>
               <Divider />
               <Group gap="sm" mb="md" justify="center">
-                <Group mx="lg" ref={githubRef}>
+                <Group gap="xs" mx="lg" ref={githubRef}>
                   <IconBrandGithubFilled
-                    size={20}
+                    size={18}
                     color={githubHovered
                       ? "var(--mantine-primary-color-filled)"
                       : "grey"}
                   />
                   <Anchor
+                    size="sm"
                     href="https://github.com/kofoednielsen/softresio"
                     underline="never"
                     c={githubHovered ? "lightgray" : "grey"}
@@ -118,14 +128,15 @@ function App() {
                     This project is open-source
                   </Anchor>
                 </Group>
-                <Group mx="lg" ref={discordRef}>
+                <Group gap="xs" mx="lg" ref={discordRef}>
                   <IconBrandDiscordFilled
-                    size={20}
+                    size={18}
                     color={discordHovered
                       ? "var(--mantine-primary-color-filled)"
                       : "grey"}
                   />
                   <Anchor
+                    size="sm"
                     href="https://discord.gg/DbfRrGGQ7J"
                     underline="never"
                     c={discordHovered ? "lightgray" : "grey"}

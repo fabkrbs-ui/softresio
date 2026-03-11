@@ -3,18 +3,9 @@ export type CharacterWithId = {
   character: Character
 }
 
-export type Class =
-  | "Warrior"
-  | "Mage"
-  | "Paladin"
-  | "Priest"
-  | "Druid"
-  | "Warlock"
-  | "Rogue"
-  | "Shaman"
 export interface Character {
   name: string
-  class: Class
+  class: string
   spec: string
 }
 
@@ -67,8 +58,9 @@ export interface AdminChanged extends BaseActivity {
   user: User
 }
 
-export interface Sheet {
-  raidId: string
+export interface Raid {
+  id: string
+  deleted: boolean
   useSrPlus: boolean
   instanceId: number
   time: string // rfc 3339
@@ -81,15 +73,15 @@ export interface Sheet {
   hardReserves: number[]
   allowDuplicateSr: boolean
   owner: User
-}
-
-export interface Raid {
-  sheet: Sheet
+  guildId?: string // uuidv4
 }
 
 interface GenericResponse<T> {
   data?: T
-  error?: string
+  error?: {
+    message: string
+    issues?: object
+  }
   user: User
 }
 
@@ -98,20 +90,24 @@ export interface CreateEditRaidRequest {
   instanceId: number
   description: string
   useSrPlus: boolean
-  adminPassword: string
   time: string //rfc 3339
   srCount: number
   hardReserves: number[]
   allowDuplicateSr: boolean
+  guildId?: string //uuidv4
+}
+
+export interface CreateGuildRequest {
+  name: string
 }
 
 export type GetInstancesResponse = GenericResponse<Instance[]>
 
 export type CreateEditRaidResponse = GenericResponse<{ raidId: string }>
 
-export type CreateSrResponse = GenericResponse<Sheet>
+export type CreateSrResponse = GenericResponse<Raid>
 
-export type GetRaidResponse = GenericResponse<Sheet>
+export type GetRaidResponse = GenericResponse<Raid>
 
 export type InfoResponse = GenericResponse<
   { discordClientId: string | undefined; discordLoginEnabled: boolean }
@@ -119,7 +115,11 @@ export type InfoResponse = GenericResponse<
 
 export type SignOutResponse = GenericResponse<void>
 
+export type CreateGuildResponse = GenericResponse<void>
+
 export type GetMyRaidsResponse = GenericResponse<Raid[]>
+
+export type GetMyGuildsResponse = GenericResponse<Guild[]>
 
 export type GetCharactersResponse = GenericResponse<Character[]>
 
@@ -128,16 +128,22 @@ export type EditAdminRequest = {
   add?: User
   remove?: User
 }
-export type LockRaidResponse = GenericResponse<Sheet>
+export type LockRaidResponse = GenericResponse<Raid>
+
+export type DeleteRaidResponse = GenericResponse<void>
+
+export type DeleteRaidRequest = {
+  raidId: string
+}
 
 export type DeleteSrRequest = {
   raidId: string
   user: User
   itemId: number
 }
-export type DeleteSrResponse = GenericResponse<Sheet>
+export type DeleteSrResponse = GenericResponse<Raid>
 
-export type EditAdminResponse = GenericResponse<Sheet>
+export type EditAdminResponse = GenericResponse<Raid>
 
 export interface CreateSrRequest {
   raidId: string
@@ -159,7 +165,7 @@ export interface Item {
   slots: string[]
   types: string[]
   dropsFrom: DropsFrom[]
-  classes: Class[]
+  classes: string[]
   quality: 1 | 2 | 3 | 4 | 5
 }
 
@@ -183,7 +189,55 @@ export interface Instance {
   npcs: Npc[]
 }
 
+export interface NpcItem {
+  itemId: number
+  npcId: number
+}
+
 export interface ItemPickerElementType {
   segment?: string
   item?: Item
+  npcId?: number
+}
+
+export interface Guild {
+  id: string // uuidv4
+  name: string
+  owner: User
+  admins: User[]
+  srPlus: SrPlusManual[]
+}
+
+export interface SrPlusManualChangeRequest {
+  guildId: string //uuidv4
+  characterName: string
+  itemId: number
+  value: number
+}
+
+export interface SrPlusManual {
+  type: "manual"
+  time: string // rfc3339
+  characterName: string
+  itemId: number
+  value: number
+}
+
+export interface SrPlusRaid {
+  type: "raid"
+  characterName: string
+  itemId: number
+  raidId: Raid["id"]
+  time: Raid["time"]
+}
+
+export type SrPlus = SrPlusRaid | SrPlusManual
+
+export type GetSrPlusResponse = GenericResponse<SrPlus[]>
+
+export type SrPlusManualChangeResponse = GenericResponse<Guild>
+
+export interface LiveUpdate {
+  raid?: Raid
+  srPluses?: SrPlus[]
 }

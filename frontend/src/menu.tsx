@@ -54,8 +54,8 @@ const MenuButtons = (
 
   return (
     <>
-      <Tooltip label="Do not expect data persistance or features to work">
-        <Badge color="red" radius="xs">Early Beta</Badge>
+      <Tooltip label="If you experience any issues please let us know">
+        <Badge color="orange" radius="xs">Beta</Badge>
       </Tooltip>
       <Button
         variant="default"
@@ -84,7 +84,7 @@ const MenuButtons = (
           closeDrawer?.()
         }}
       >
-        Create raid
+        Create Raid
       </Button>
     </>
   )
@@ -116,7 +116,7 @@ export const Menu = (
     fetch("/api/signout").then((r) => r.json()).then(
       (j: SignOutResponse) => {
         if (j.error) {
-          alert(j.error)
+          alert(j.error.message)
         } else if (j.user) {
           setUser(j.user)
         }

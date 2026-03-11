@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react"
 import type {
   Attendee,
+  DeleteRaidRequest,
+  DeleteRaidResponse,
   DeleteSrRequest,
   DeleteSrResponse,
   EditAdminRequest,
   EditAdminResponse,
   GetInstancesResponse,
   GetRaidResponse,
+  GetSrPlusResponse,
   Instance,
-  Sheet,
+  LiveUpdate,
+  Raid,
+  SrPlus,
   User,
 } from "../shared/types.ts"
 import { useParams } from "react-router"
@@ -34,6 +39,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core"
+import { modals } from "@mantine/modals"
 import { CopyClipboardButton, raidIdToUrl } from "./copy-clipboard-button.tsx"
 import { CreateSr } from "./create-sr.tsx"
 import { SrList } from "./sr-list.tsx"
@@ -80,26 +86,37 @@ const raidImage = (key: string) => {
 }
 
 export const RaidUpdater = (
-  { loadRaid, raidId }: { loadRaid: (sheet: Sheet) => void; raidId: string },
+  { loadRaid, raidId, setSrPluses }: {
+    loadRaid: (raid: Raid) => void
+    raidId: string
+    setSrPluses: (srPluses: SrPlus[]) => void
+  },
 ) => {
   const { lastMessage } = useWebSocket(`/api/ws/${raidId}`, {
     shouldReconnect: (_) => true,
   })
   useEffect(() => {
     if (lastMessage?.data) {
-      loadRaid(JSON.parse(lastMessage.data))
+      const liveUpdate: LiveUpdate = JSON.parse(lastMessage.data)
+      if (liveUpdate.raid) {
+        loadRaid(liveUpdate.raid)
+      }
+      if (liveUpdate.srPluses) {
+        setSrPluses(liveUpdate.srPluses)
+      }
     }
   }, [lastMessage])
   return null
 }
 
-export const Raid = (
+export const RaidElement = (
   { itemPickerOpen = false, user }: { itemPickerOpen?: boolean; user: User },
 ) => {
   const params = useParams()
   const [logOpen, setLogOpen] = useState(false)
   const [showHardReserves, setShowHardReserves] = useState(false)
-  const [sheet, setSheet] = useState<Sheet>()
+  const [raid, setRaid] = useState<Raid>()
+  const [srPluses, setSrPluses] = useState<SrPlus[]>()
   const [instance, setInstance] = useState<Instance>()
   const [instances, setInstances] = useState<Instance[]>()
   const [exportedLast, setExportedLast] = useState<{
@@ -108,19 +125,24 @@ export const Raid = (
   }>()
   const navigate = useNavigate()
 
-  const loadRaid = (sheet?: Sheet) => {
-    if (sheet) {
-      return setSheet(sheet)
+  const loadRaid = (raid?: Raid) => {
+    if (raid) {
+      return setRaid(raid)
     }
-    fetch(`/api/raid/${params.raidId}`).then((r) => r.json()).then(
-      (j: GetRaidResponse) => {
-        if (j.error) {
-          alert(j.error)
-        } else if (j.data) {
-          setSheet(j.data)
-        }
-      },
-    )
+    if (!params.raidId) return
+    if (params.raidId.toUpperCase() !== params.raidId) {
+      navigate(`/${params.raidId.toUpperCase()}`)
+    } else {
+      fetch(`/api/raid/${params.raidId}`).then((r) => r.json()).then(
+        (j: GetRaidResponse) => {
+          if (j.error) {
+            alert(j.error.message)
+          } else if (j.data) {
+            setRaid(j.data)
+          }
+        },
+      )
+    }
   }
 
   const lockRaid = () => {
@@ -129,7 +151,7 @@ export const Raid = (
     ).then(
       (j: GetRaidResponse) => {
         if (j.error) {
-          alert(j.error)
+          alert(j.error.message)
         } else if (j.data) {
           loadRaid(j.data)
         }
@@ -138,9 +160,9 @@ export const Raid = (
   }
 
   const editAdmin = (user: User, remove: boolean) => {
-    if (!sheet) return
+    if (!raid) return
     const request: EditAdminRequest = {
-      raidId: sheet.raidId,
+      raidId: raid.id,
       [remove ? "remove" : "add"]: user,
     }
 
@@ -149,7 +171,7 @@ export const Raid = (
     ).then(
       (j: EditAdminResponse) => {
         if (j.error) {
-          alert(j.error)
+          alert(j.error.message)
         } else if (j.data) {
           loadRaid(j.data)
         }
@@ -158,13 +180,13 @@ export const Raid = (
   }
 
   const deleteSr = (user: User, itemId: number) => {
-    if (!sheet) return
-    const request: DeleteSrRequest = { raidId: sheet.raidId, itemId, user }
+    if (!raid) return
+    const request: DeleteSrRequest = { raidId: raid.id, itemId, user }
     fetch(`/api/sr/delete`, { method: "POST", body: JSON.stringify(request) })
       .then((r) => r.json()).then(
         (j: DeleteSrResponse) => {
           if (j.error) {
-            alert(j.error)
+            alert(j.error.message)
           } else if (j.data) {
             loadRaid(j.data)
           }
@@ -172,14 +194,43 @@ export const Raid = (
       )
   }
 
-  useEffect(loadRaid, [])
+  const deleteRaid = () => {
+    if (!raid) return
+    const request: DeleteRaidRequest = { raidId: raid.id }
+    fetch(`/api/raid/delete`, { method: "POST", body: JSON.stringify(request) })
+      .then((r) => r.json()).then(
+        (j: DeleteRaidResponse) => {
+          if (j.error) {
+            alert(j.error.message)
+          } else {
+            navigate("/")
+          }
+        },
+      )
+  }
+
+  useEffect(loadRaid, [params.raidId])
+
+  useEffect(() => {
+    if (raid?.guildId && !srPluses) {
+      fetch(`/api/srplus/${raid.id}`)
+        .then((r) => r.json())
+        .then((j: GetSrPlusResponse) => {
+          if (j.error) {
+            alert(j.error.message)
+          } else if (j.data) {
+            setSrPluses(j.data)
+          }
+        })
+    }
+  }, [raid])
 
   useEffect(() => {
     fetch("/api/instances")
       .then((r) => r.json())
       .then((j: GetInstancesResponse) => {
         if (j.error) {
-          alert(j.error)
+          alert(j.error.message)
         } else if (j.data) {
           setInstances(j.data)
         }
@@ -187,21 +238,19 @@ export const Raid = (
   }, [])
 
   useEffect(() => {
-    if (sheet && instances) {
-      const matches = instances.filter((i: Instance) =>
-        i.id == sheet.instanceId
-      )
+    if (raid && instances) {
+      const matches = instances.filter((i: Instance) => i.id == raid.instanceId)
       if (matches.length == 1) {
         setInstance(matches[0])
       } else {
         alert("Could not find instance")
       }
     }
-  }, [sheet, instances])
+  }, [raid, instances])
 
-  const isAdmin = sheet?.admins.some((u) => u.userId == user?.userId) || false
+  const isAdmin = raid?.admins.some((u) => u.userId == user?.userId) || false
 
-  if (sheet && instance && user) {
+  if (raid && instance && user) {
     return (
       <Stack>
         <Paper shadow="sm" p="sm">
@@ -225,13 +274,13 @@ export const Raid = (
                   }}
                 />
               </Group>
-              {sheet.locked ? <Badge color="red">Locked</Badge> : null}
+              {raid.locked ? <Badge color="red">Locked</Badge> : null}
             </Group>
             <Group>
               <Badge color="var(--mantine-color-dark-5)" radius="xs">
-                {formatTime(sheet.time)}
+                {formatTime(raid.time)}
               </Badge>
-              {sheet.hardReserves.length > 0
+              {raid.hardReserves.length > 0
                 ? (
                   <Tooltip
                     label={`Click to ${
@@ -243,7 +292,7 @@ export const Raid = (
                       style={{ userSelect: "none", cursor: "pointer" }}
                       onClick={() => setShowHardReserves(!showHardReserves)}
                     >
-                      {`${sheet.hardReserves.length} HR`}
+                      {`${raid.hardReserves.length} HR`}
                     </Badge>
                   </Tooltip>
                 )
@@ -252,17 +301,24 @@ export const Raid = (
             <HardReserves
               items={instance.items}
               show={showHardReserves}
-              hardReserves={sheet.hardReserves}
+              hardReserves={raid.hardReserves}
             />
-            {sheet.description
+            {raid.description
               ? (
                 <Text span style={{ whiteSpace: "pre-line" }}>
-                  {sheet.description}
+                  {raid.description}
                 </Text>
               )
               : null}
           </Stack>
         </Paper>
+        <CreateSr
+          loadRaid={loadRaid}
+          instance={instance}
+          raid={raid}
+          user={user}
+          itemPickerOpen={itemPickerOpen}
+        />
         <Paper shadow="sm" p="sm" display={isAdmin ? "block" : "none"}>
           <Stack gap={0}>
             <Group justify="space-between">
@@ -280,29 +336,51 @@ export const Raid = (
                   Edit
                 </Button>
                 <Button
-                  onClick={lockRaid}
-                  variant={sheet.locked ? "" : "default"}
-                  color="red"
-                  leftSection={sheet.locked ? <IconLock /> : <IconLockOpen2 />}
+                  variant="default"
+                  onClick={() => navigate(`/copy/${params.raidId}`)}
                 >
-                  {sheet.locked ? "Locked" : "Unlocked"}
+                  Clone
+                </Button>
+                {raid.owner.userId == user.userId
+                  ? (
+                    <Button
+                      variant="default"
+                      onClick={() => {
+                        modals.openConfirmModal({
+                          title: "Are you sure?",
+                          centered: true,
+                          children: (
+                            <Text size="sm">
+                              You want to permanently delete this raid?
+                            </Text>
+                          ),
+                          labels: { confirm: "Confirm", cancel: "Cancel" },
+                          confirmProps: { color: "red" },
+                          onConfirm: () => deleteRaid(),
+                        })
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  )
+                  : null}
+                <Button
+                  onClick={lockRaid}
+                  variant={raid.locked ? "" : "default"}
+                  color="red"
+                  leftSection={raid.locked ? <IconLock /> : <IconLockOpen2 />}
+                >
+                  {raid.locked ? "Locked" : "Unlocked"}
                 </Button>
               </Group>
               <IconShieldFilled size={20} />
             </Group>
           </Stack>
         </Paper>
-        <CreateSr
-          loadRaid={loadRaid}
-          instance={instance}
-          sheet={sheet}
-          user={user}
-          itemPickerOpen={itemPickerOpen}
-        />
         <Paper shadow="sm" mb="md" style={{ overflow: "hidden" }}>
           <Group p="sm" justify="space-between">
             <Button
-              disabled={sheet.activityLog.length == 0}
+              disabled={raid.activityLog.length == 0}
               onClick={() => setLogOpen(true)}
               variant="default"
               leftSection={<IconLogs size={16} />}
@@ -311,54 +389,59 @@ export const Raid = (
             </Button>
             <Group>
               <CopyClipboardButton
-                toClipboard={rollForExport(sheet)}
+                toClipboard={rollForExport(raid, srPluses)}
                 label="RollFor"
                 tooltip="Copy RollFor export"
                 onClick={() =>
                   setExportedLast({
-                    attendees: sheet.attendees,
-                    hardReserves: sheet.hardReserves.sort(),
+                    attendees: raid.attendees,
+                    hardReserves: raid.hardReserves.sort(),
                   })}
                 icon={exportedLast &&
                     !deepEqual(exportedLast, {
-                      attendees: sheet.attendees,
-                      hardReserves: sheet.hardReserves.sort(),
+                      attendees: raid.attendees,
+                      hardReserves: raid.hardReserves.sort(),
                     })
                   ? <IconRefreshAlert size={16} />
                   : <IconCopy size={16} />}
                 orange={exportedLast &&
                   !deepEqual(exportedLast, {
-                    attendees: sheet.attendees,
-                    hardReserves: sheet.hardReserves.sort(),
+                    attendees: raid.attendees,
+                    hardReserves: raid.hardReserves.sort(),
                   })}
               />
               <Group gap={3} miw={45}>
                 <IconUserFilled size={20} />
-                <Title order={6}>{sheet.attendees.length}</Title>
+                <Title order={6}>{raid.attendees.length}</Title>
               </Group>
             </Group>
           </Group>
-          {sheet.attendees.length > 0
+          {raid.attendees.length > 0
             ? (
               <SrList
-                sheet={sheet}
+                raid={raid}
                 items={instance.items}
                 user={user}
                 deleteSr={deleteSr}
                 editAdmin={editAdmin}
+                srPluses={srPluses || []}
               />
             )
             : null}
         </Paper>
-        <RaidUpdater raidId={sheet.raidId} loadRaid={loadRaid} />
+        <RaidUpdater
+          raidId={raid.id}
+          loadRaid={loadRaid}
+          setSrPluses={setSrPluses}
+        />
         <ActivityLog
-          attendees={sheet.attendees}
+          attendees={raid.attendees}
           items={instance.items}
-          admins={sheet.admins}
-          owner={sheet.owner}
+          admins={raid.admins}
+          owner={raid.owner}
           open={logOpen}
           onClose={() => setLogOpen(false)}
-          activityLog={sheet.activityLog}
+          activityLog={raid.activityLog}
         />
       </Stack>
     )

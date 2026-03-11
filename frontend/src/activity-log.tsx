@@ -37,8 +37,10 @@ const ActivityLogElement = (
                 <b id={`activity-${index}`}>
                   {activity.character?.name || "User"}
                 </b>
-                was {activity.change}{" "}
-                {activity.change == "promoted" ? "to" : "as"} admin
+                {" was "}
+                {activity.change} {activity.change == "promoted" ? "to" : "as"}
+                {" "}
+                admin
               </Text>
             </Group>
           )
@@ -117,6 +119,7 @@ export const ActivityLog = (
   )
   return (
     <Modal
+      title="Activity Log"
       size="auto"
       opened={open}
       onClose={onClose}

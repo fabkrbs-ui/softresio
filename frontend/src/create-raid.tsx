@@ -20,21 +20,28 @@ import type {
   CreateEditRaidRequest,
   CreateEditRaidResponse,
   GetInstancesResponse,
+  GetMyGuildsResponse,
   GetRaidResponse,
+  Guild,
   Instance,
-  Sheet,
+  Raid,
 } from "../shared/types.ts"
 import { deepEqual } from "fast-equals"
 
 export const CreateRaid = (
-  { itemPickerOpen = false }: { itemPickerOpen?: boolean },
+  { itemPickerOpen = false, edit = false }: {
+    itemPickerOpen?: boolean
+    edit?: boolean
+  },
 ) => {
   const navigate = useNavigate()
   const params = useParams()
 
-  const [sheetBeforeEdit, setSheetBeforeEdit] = useState<Sheet>()
+  const [raidBeforeEdit, setRaidBeforeEdit] = useState<Raid>()
   const [instances, setInstances] = useState<Instance[]>()
   const [instance, setInstance] = useState<Instance>()
+  const [guilds, setGuilds] = useState<Guild[]>([])
+  const [selectedGuildId, setSelectedGuildId] = useState<string>()
   const [hardReserves, setHardReserves] = useState<number[]>([])
 
   const [description, setDescription] = useState("")
@@ -56,8 +63,7 @@ export const CreateRaid = (
       return
     }
     const request: CreateEditRaidRequest = {
-      raidId: params.raidId,
-      adminPassword: "", // Maybe we completely remove this later
+      raidId: edit ? params.raidId : undefined,
       instanceId: instance.id,
       useSrPlus,
       description,
@@ -65,12 +71,13 @@ export const CreateRaid = (
       srCount,
       hardReserves,
       allowDuplicateSr,
+      guildId: selectedGuildId,
     }
     fetch("/api/raid/create", { method: "POST", body: JSON.stringify(request) })
       .then((r) => r.json())
       .then((j: CreateEditRaidResponse) => {
         if (j.error) {
-          alert(j.error)
+          alert(j.error.message)
         } else if (j.data) {
           navigate(`/${j.data.raidId}`)
         }
@@ -82,7 +89,7 @@ export const CreateRaid = (
       .then((r) => r.json())
       .then((j: GetInstancesResponse) => {
         if (j.error) {
-          alert(j.error)
+          alert(j.error.message)
         } else if (j.data) {
           setInstances(
             j.data.sort((a, b) =>
@@ -94,22 +101,38 @@ export const CreateRaid = (
   }, [])
 
   useEffect(() => {
+    fetch("/api/guilds")
+      .then((r) => r.json())
+      .then((j: GetMyGuildsResponse) => {
+        if (j.error) {
+          alert(j.error.message)
+        } else if (j.data) {
+          setGuilds(j.data)
+        }
+      })
+  }, [])
+
+  useEffect(() => {
     if (params.raidId && instances) {
       fetch(`/api/raid/${params.raidId}`).then((r) => r.json()).then(
         (j: GetRaidResponse) => {
           if (j.error) {
-            alert(j.error)
+            alert(j.error.message)
           } else if (j.data) {
-            const sheet = j.data
-            setInstance(instances.find((i) => i.id == sheet.instanceId))
-            setHardReserves(sheet.hardReserves)
-            setDescription(sheet.description)
-            setUseSrPlus(sheet.useSrPlus)
-            setAllowDuplicateSr(sheet.allowDuplicateSr)
-            setUseHr(sheet.hardReserves.length > 0)
-            setSrCount(sheet.srCount)
-            setTime(new Date(sheet.time))
-            setSheetBeforeEdit(sheet)
+            const raid = j.data
+            setInstance(instances.find((i) => i.id == raid.instanceId))
+            setHardReserves(raid.hardReserves)
+            setDescription(raid.description)
+            setUseSrPlus(raid.useSrPlus)
+            setAllowDuplicateSr(raid.allowDuplicateSr)
+            setUseHr(raid.hardReserves.length > 0)
+            setSrCount(raid.srCount)
+            setSelectedGuildId(raid.guildId)
+
+            if (edit) {
+              setTime(new Date(raid.time))
+              setRaidBeforeEdit(raid)
+            }
           }
         },
       )
@@ -117,15 +140,16 @@ export const CreateRaid = (
   }, [instances])
 
   const raidChanged = () => {
-    if (!sheetBeforeEdit) return true
+    if (!raidBeforeEdit) return true
     const a = {
-      instanceId: sheetBeforeEdit.instanceId,
-      hardReserves: sheetBeforeEdit.hardReserves.sort(),
-      description: sheetBeforeEdit.description,
-      useSrPlus: sheetBeforeEdit.useSrPlus,
-      allowDuplicateSr: sheetBeforeEdit.allowDuplicateSr,
-      srCount: sheetBeforeEdit.srCount,
-      time: sheetBeforeEdit.time,
+      instanceId: raidBeforeEdit.instanceId,
+      hardReserves: raidBeforeEdit.hardReserves.sort(),
+      description: raidBeforeEdit.description,
+      useSrPlus: raidBeforeEdit.useSrPlus,
+      allowDuplicateSr: raidBeforeEdit.allowDuplicateSr,
+      srCount: raidBeforeEdit.srCount,
+      time: raidBeforeEdit.time,
+      selectedGuildId: raidBeforeEdit.guildId,
     }
     const b = {
       instanceId: instance?.id,
@@ -135,6 +159,7 @@ export const CreateRaid = (
       allowDuplicateSr,
       srCount,
       time: time.toISOString(),
+      selectedGuildId,
     }
     return !deepEqual(a, b)
   }
@@ -142,7 +167,7 @@ export const CreateRaid = (
   return (
     <>
       <Paper shadow="sm" p="sm">
-        <Stack gap="md">
+        <Stack>
           <Select
             withAsterisk={instance == undefined}
             label="Instance"
@@ -158,8 +183,8 @@ export const CreateRaid = (
             onChange={(v) => {
               const newInstance = instances?.find((i) => i.id == Number(v))
               setInstance(newInstance)
-              if ((newInstance?.id == sheetBeforeEdit?.instanceId) && useHr) {
-                setHardReserves(sheetBeforeEdit?.hardReserves || [])
+              if ((newInstance?.id == raidBeforeEdit?.instanceId) && useHr) {
+                setHardReserves(raidBeforeEdit?.hardReserves || [])
               } else {
                 setHardReserves([])
               }
@@ -170,13 +195,22 @@ export const CreateRaid = (
             value={description}
             autosize
             minRows={3}
+            maxLength={280}
             onChange={(event) => setDescription(event.currentTarget.value)}
+          />
+          <DateTimePicker
+            value={time}
+            onChange={(value) => {
+              if (value) setTime(new Date(value))
+            }}
+            label="Date and time"
+            placeholder="Pick date and time"
           />
 
           <Stack gap={0}>
             <Group mb={3} p={0} gap={3}>
               <Text size="sm">
-                Number of SRs
+                Number of soft-reserves
               </Text>
               <Text
                 size="sm"
@@ -200,17 +234,9 @@ export const CreateRaid = (
               checked={allowDuplicateSr}
               onChange={(event) =>
                 setAllowDuplicateSr(event.currentTarget.checked)}
-              label="Allow duplicate SRs"
+              label="Allow duplicate soft-reserves"
             />
           </Collapse>
-          <DateTimePicker
-            value={time}
-            onChange={(value) => {
-              if (value) setTime(new Date(value))
-            }}
-            label="Pick date and time"
-            placeholder="Pick date and time"
-          />
           <Switch
             checked={useHr}
             disabled={!instance}
@@ -218,8 +244,22 @@ export const CreateRaid = (
               setUseHr(event.target.checked)
               if (!event.target.checked) setHardReserves([])
             }}
-            label="Use hard-reserves"
+            label="Hard-reserve items"
           />
+          {guilds.length > 0
+            ? (
+              <Select
+                label="Select Guild"
+                placeholder="No guild"
+                value={selectedGuildId}
+                onChange={(v) => setSelectedGuildId(v || undefined)}
+                data={guilds.map((g) => ({
+                  label: g.name,
+                  value: g.id,
+                }))}
+              />
+            )
+            : null}
           <Collapse in={useHr && instance ? true : false}>
             {instance
               ? (
@@ -239,7 +279,7 @@ export const CreateRaid = (
             mt="sm"
             onClick={() => {
               if (
-                (params.raidId) && (sheetBeforeEdit?.instanceId != instance?.id)
+                edit && (raidBeforeEdit?.instanceId != instance?.id)
               ) {
                 modals.openConfirmModal({
                   title: "Are you sure?",
@@ -261,7 +301,7 @@ export const CreateRaid = (
             disabled={!instance || !srCount ||
               (useHr && hardReserves.length == 0) || !raidChanged()}
           >
-            {params.raidId ? "Save changes" : "Create Raid"}
+            {edit ? "Save Changes" : "Create Raid"}
           </Button>
         </Stack>
       </Paper>
